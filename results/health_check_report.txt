@@ -1,0 +1,60 @@
+===========================================================================
+          EXPANDED DATASET HEALTH CHECK & AUDIT REPORT          
+===========================================================================
+Timestamp: 2026-10-13 23:52:04
+Target dataset: E:\AI_Compiler_Optimization\data\dataset.csv
+
+--- 1. SAMPLE COUNT SUMMARY ---
+  - Original Baseline Programs:     31
+  - Newly Added Programs:          610
+  - Total Dataset Programs:        641 (Target: >=500 -> PASS [MET])
+
+--- 2. CLASS BALANCE ACROSS OPTIMIZATION LEVELS ---
+Flag    Count     Percentage     Status              
+-----------------------------------------------------
+-O0     123        19.19%        HEALTHY
+-O1     112        17.47%        HEALTHY
+-O2     136        21.22%        HEALTHY
+-O3     142        22.15%        HEALTHY
+-Os     128        19.97%        HEALTHY
+>> All optimization classes have healthy representation (>5%).
+
+--- 3. SOURCE BENCHMARK DIVERSITY ---
+Source              Count     Percentage     Status              
+-----------------------------------------------------------------
+llvm_testsuite      521        81.28%        DOMINATING (>50%)
+beebs               57          8.89%        BALANCED
+original_30         31          4.84%        BALANCED
+polybench           30          4.68%        BALANCED
+cbench              1           0.16%        BALANCED
+mibench             1           0.16%        BALANCED
+>> NOTE: Dominant source suite: llvm_testsuite (expected for broad single-source compiler suites).
+
+--- 4. FEATURE DISTRIBUTION COMPARISON (OLD 30 vs NEW) ---
+Feature                  Old Mean    New Mean    Ratio (New/Old)   Shift Flag  
+---------------------------------------------------------------------------
+num_lines                34.81       103.29      2.97              NORMAL
+file_size_bytes          835.87      2618.91     3.13              NORMAL
+code_lines               29.93       77.89       2.60              NORMAL
+num_loops                3.77        2.98        0.79              NORMAL
+num_functions            2.23        3.25        1.46              NORMAL
+num_branches             1.32        7.30        5.52              SHIFT
+num_arithmetic_ops       12.84       75.93       5.91              SHIFT
+num_pointers             4.10        16.61       4.05              NORMAL
+num_arrays               9.81        11.86       1.21              NORMAL
+num_function_calls       4.81        10.06       2.09              NORMAL
+max_loop_nesting_depth   3.77        1.85        0.49              NORMAL
+num_div_mod_ops          2.16        22.82       10.56             SHIFT
+num_recursive_calls      1.77        3.24        1.83              NORMAL
+num_dynamic_alloc        1.61        0.39        0.24              NORMAL
+num_structs              1.16        1.59        1.37              NORMAL
+num_pointer_ops          5.68        20.90       3.68              NORMAL
+num_nested_loops         1.03        0.56        0.54              NORMAL
+branch_density           0.04        0.06        1.86              NORMAL
+loop_per_function        1.79        0.90        0.50              NORMAL
+arithmetic_per_line      0.38        0.50        1.32              NORMAL
+call_branch_ratio        3.23        3.50        1.09              NORMAL
+
+>> NOTE: Features with noticeable shift: 3 features.
+   (Expected: Real-world benchmark suites possess diverse code lengths, deeper structures, and larger array spaces compared to synthetic baseline loops).
+===========================================================================

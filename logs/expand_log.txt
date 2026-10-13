@@ -1,0 +1,344 @@
+
+[2026-10-13 23:34:17] ======================================================================
+[2026-10-13 23:34:17] STARTING STEP 2: EXPAND DATASET DOWNLOAD & EXTRACTION
+[2026-10-13 23:34:17] ======================================================================
+[2026-10-13 23:34:17] [Baseline] Registered 31 existing programs as 'original_30'.
+[2026-10-13 23:34:17] [PolyBench] Extracting kernels from PolyBench/C...
+[2026-10-13 23:34:17]   [PolyBench] Extracted: polybench_correlation.c
+[2026-10-13 23:34:17]   [PolyBench] Extracted: polybench_covariance.c
+[2026-10-13 23:34:17]   [PolyBench] Extracted: polybench_gemm.c
+[2026-10-13 23:34:17]   [PolyBench] Extracted: polybench_gemver.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_gesummv.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_symm.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_syr2k.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_syrk.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_trmm.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_2mm.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_3mm.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_atax.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_bicg.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_doitgen.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_mvt.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_cholesky.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_durbin.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_gramschmidt.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_lu.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_ludcmp.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_trisolv.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_deriche.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_floyd-warshall.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_nussinov.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_adi.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_fdtd-2d.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_heat-3d.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_jacobi-1d.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_jacobi-2d.c
+[2026-10-13 23:34:18]   [PolyBench] Extracted: polybench_seidel-2d.c
+[2026-10-13 23:34:18] [PolyBench] Total kernels extracted: 30
+[2026-10-13 23:34:18] [cBench] Extracting benchmark programs from cBench...
+[2026-10-13 23:34:18]   [cBench] Flattened & Extracted: cbench_automotive_qsort1.c
+[2026-10-13 23:34:18]   [cBench] Extracted: cbench_automotive_susan.c
+[2026-10-13 23:34:19]   [cBench] Extracted: cbench_network_dijkstra.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_network_patricia.c
+[2026-10-13 23:34:19]   [cBench] Extracted: cbench_office_stringsearch2.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_security_rijndael.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_security_sha.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_telecom_adpcm_c.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_telecom_adpcm_d.c
+[2026-10-13 23:34:19]   [cBench] Flattened & Extracted: cbench_telecom_crc32.c
+[2026-10-13 23:34:19] [cBench] Total programs extracted: 10
+[2026-10-13 23:34:19] [MiBench] Extracting standalone benchmark programs from MiBench...
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_basicmath_small.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_bitcnts.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_qsort_small.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_susan.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_dijkstra_small.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_patricia.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_stringsearch.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_blowfish.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_sha.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_adpcm_rawcaudio.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_adpcm_rawdaudio.c
+[2026-10-13 23:34:19]   [MiBench] Extracted: mibench_crc32.c
+[2026-10-13 23:34:20]   [MiBench] Extracted: mibench_fft.c
+[2026-10-13 23:34:20] [MiBench] Total programs extracted: 13
+[2026-10-13 23:34:20] [BEEBS] Extracting benchmark programs from BEEBS...
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_aha_compress.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_aha_mont64.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_bs.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_bubblesort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_cnt.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_compress.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_cover.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_crc.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_crc32.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ctl.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ctl_stack.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ctl_string.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ctl_vector.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_cubic.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_dijkstra.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_dtoa.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_duff.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_edn.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_expint.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_fac.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_fasta.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_fdct.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_fibcall.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_fir.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_frac.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_huffbench.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_insertsort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_janne_complex.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_jfdctint.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_lcdnum.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_levenshtein.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ludcmp.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_matmult.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_matmult_float.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_matmult_int.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_mergesort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_miniz.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_minver.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nbody.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ndes.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_aes.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_arcfour.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_cast128.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_des.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_md5.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nettle_sha256.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_newlib_exp.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_newlib_log.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_newlib_mod.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_newlib_sqrt.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_ns.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_nsichneu.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_picojpeg.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_prime.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_qrduino.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_qsort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_qurt.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_recursion.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_rijndael.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_select.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_arraybinsearch.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_arrayheapsort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_arrayquicksort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_arraysort.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_dllist.c
+[2026-10-13 23:34:20]   [BEEBS] Extracted: beebs_sglib_hashtable.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_sglib_listinsertsort.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_sglib_listsort.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_sglib_queue.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_sglib_rbtree.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_slre.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_sqrt.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_st.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_statemate.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_stb_perlin.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_stringsearch1.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_strstr.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_tarai.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_template.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_trio.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_trio_snprintf.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_trio_sscanf.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_ud.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_whetstone.c
+[2026-10-13 23:34:21]   [BEEBS] Extracted: beebs_wikisort.c
+[2026-10-13 23:34:21] [BEEBS] Total programs extracted: 85
+[2026-10-13 23:34:21] [LLVM] Extracting single-source C programs from LLVM Test Suite (target ~450)...
+[2026-10-13 23:34:21]   [LLVM] Extracted 50 programs so far...
+[2026-10-13 23:34:22]   [LLVM] Extracted 100 programs so far...
+[2026-10-13 23:34:22]   [LLVM] Extracted 150 programs so far...
+[2026-10-13 23:34:23]   [LLVM] Extracted 200 programs so far...
+[2026-10-13 23:34:24]   [LLVM] Extracted 250 programs so far...
+[2026-10-13 23:34:24]   [LLVM] Extracted 300 programs so far...
+[2026-10-13 23:34:24]   [LLVM] Extracted 350 programs so far...
+[2026-10-13 23:34:25]   [LLVM] Extracted 400 programs so far...
+[2026-10-13 23:34:25]   [LLVM] Extracted 450 programs so far...
+[2026-10-13 23:34:25] [LLVM] Total programs extracted: 450
+[2026-10-13 23:34:25] ======================================================================
+[2026-10-13 23:34:25] DATASET EXTRACTION COMPLETE:
+[2026-10-13 23:34:25]   - PolyBench/C:    30
+[2026-10-13 23:34:25]   - cBench:         10
+[2026-10-13 23:34:25]   - MiBench:        13
+[2026-10-13 23:34:25]   - BEEBS:          85
+[2026-10-13 23:34:25]   - LLVM TestSuite: 450
+[2026-10-13 23:34:25]   TOTAL NEW DOWNLOADED: 588
+[2026-10-13 23:34:25] ======================================================================
+[2026-10-13 23:34:25] Saved manifest (619 total entries) -> manifest.json
+[2026-10-13 23:35:43] ======================================================================
+[2026-10-13 23:35:43] STARTING STEP 3: VALIDATE & FILTER DOWNLOADED PROGRAMS
+[2026-10-13 23:35:43] ======================================================================
+[2026-10-13 23:35:43] Baseline programs detected: 31
+[2026-10-13 23:35:43] New programs to validate:   588
+[2026-10-13 23:35:43] Initialized duplicate cache with 31 baseline feature vectors.
+[2026-10-13 23:35:43] Checking for duplicate feature vectors...
+[2026-10-13 23:37:20] ======================================================================
+[2026-10-13 23:37:20] STARTING STEP 3: VALIDATE & FILTER DOWNLOADED PROGRAMS
+[2026-10-13 23:37:20] ======================================================================
+[2026-10-13 23:37:20] Baseline programs detected: 31
+[2026-10-13 23:37:20] New programs to validate:   584
+[2026-10-13 23:37:20] Initialized duplicate cache with 31 baseline feature vectors.
+[2026-10-13 23:37:20] Checking for duplicate feature vectors and file size limits...
+[2026-10-13 23:37:22]   Duplicate check progress: [100/584]
+[2026-10-13 23:37:22]   Duplicate check progress: [200/584]
+[2026-10-13 23:37:23]   Duplicate check progress: [300/584]
+[2026-10-13 23:37:23]   Duplicate check progress: [400/584]
+[2026-10-13 23:37:23]   Duplicate check progress: [500/584]
+[2026-10-13 23:37:24] Near-duplicate check complete: 573 unique candidates (11 quarantined).
+[2026-10-13 23:37:24] Starting compilation and execution validation with 6 worker threads...
+[2026-10-13 23:37:49]   Progress: [50/573] validated (Passed: 39, Failed: 22)
+[2026-10-13 23:38:10]   Progress: [100/573] validated (Passed: 66, Failed: 45)
+[2026-10-13 23:38:36]   Progress: [150/573] validated (Passed: 113, Failed: 48)
+[2026-10-13 23:38:52]   Progress: [200/573] validated (Passed: 133, Failed: 78)
+[2026-10-13 23:40:33]   Progress: [250/573] validated (Passed: 148, Failed: 113)
+[2026-10-13 23:40:45]   Progress: [300/573] validated (Passed: 150, Failed: 161)
+[2026-10-13 23:40:53]   Progress: [350/573] validated (Passed: 150, Failed: 211)
+[2026-10-13 23:41:04]   Progress: [400/573] validated (Passed: 154, Failed: 257)
+[2026-10-13 23:41:55]   Progress: [450/573] validated (Passed: 170, Failed: 291)
+[2026-10-13 23:42:57]   Progress: [500/573] validated (Passed: 188, Failed: 323)
+[2026-10-13 23:43:39]   Progress: [550/573] validated (Passed: 214, Failed: 347)
+[2026-10-13 23:44:49]   Progress: [573/573] validated (Passed: 237, Failed: 347)
+[2026-10-13 23:44:49] ======================================================================
+[2026-10-13 23:44:49] VALIDATION & FILTERING REPORT:
+[2026-10-13 23:44:49]   Total downloaded: 584
+[2026-10-13 23:44:49]   Total passed:     237
+[2026-10-13 23:44:49]   Total failed:     347
+[2026-10-13 23:44:49]   Failure reasons breakdown:
+[2026-10-13 23:44:49]     - Compilation failed under -O0: 294
+[2026-10-13 23:44:49]     - Execution timed out (>2.0s) under -O0: 34
+[2026-10-13 23:44:49]     - Execution crashed with exit code 1 under -O0: 7
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc16_le_data8.c: 2
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc16_be.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc16_le.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc16_be_nodata.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc8_be.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_crc8_be_data16.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_lasx_xvabsd_2.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_lasx_xvavg_2.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of llvm_testsuite_lasx_xvextl_1.c: 1
+[2026-10-13 23:44:49]     - Duplicate feature vector of mibench_adpcm_rawcaudio.c: 1
+[2026-10-13 23:44:49]     - Execution crashed with exit code 2 under -O0: 1
+[2026-10-13 23:44:49] ======================================================================
+[2026-10-13 23:44:49] Saved validation report -> E:\AI_Compiler_Optimization\logs\validation_report.json
+[2026-10-13 23:44:49] Saved validated measurements cache -> E:\AI_Compiler_Optimization\logs\validated_measurements_cache.json
+[2026-10-13 23:46:03] ======================================================================
+[2026-10-13 23:46:03] STARTING STEP 2: EXPAND DATASET DOWNLOAD & EXTRACTION
+[2026-10-13 23:46:03] ======================================================================
+[2026-10-13 23:46:03] [LLVM-Torture] Extracting torture execution kernels (target: 380)...
+[2026-10-13 23:46:03]   [LLVM-Torture] Extracted 50 programs so far...
+[2026-10-13 23:46:04]   [LLVM-Torture] Extracted 100 programs so far...
+[2026-10-13 23:46:04]   [LLVM-Torture] Extracted 150 programs so far...
+[2026-10-13 23:46:05]   [LLVM-Torture] Extracted 200 programs so far...
+[2026-10-13 23:46:05]   [LLVM-Torture] Extracted 250 programs so far...
+[2026-10-13 23:46:06]   [LLVM-Torture] Extracted 300 programs so far...
+[2026-10-13 23:46:06]   [LLVM-Torture] Extracted 350 programs so far...
+[2026-10-13 23:46:06] [LLVM-Torture] Total torture programs extracted: 380
+[2026-10-13 23:46:06] ======================================================================
+[2026-10-13 23:46:06] DATASET EXTRACTION COMPLETE:
+[2026-10-13 23:46:06]   - PolyBench/C:        30
+[2026-10-13 23:46:06]   - cBench:             10
+[2026-10-13 23:46:06]   - MiBench:            13
+[2026-10-13 23:46:06]   - BEEBS:              85
+[2026-10-13 23:46:06]   - LLVM TestSuite:     830
+[2026-10-13 23:46:06]   TOTAL PROGRAMS IN MANIFEST: 999
+[2026-10-13 23:46:06] ======================================================================
+[2026-10-13 23:46:06] Saved manifest (999 total entries) -> manifest.json
+[2026-10-13 23:46:39] ======================================================================
+[2026-10-13 23:46:39] STARTING STEP 3: VALIDATE & FILTER DOWNLOADED PROGRAMS
+[2026-10-13 23:46:39] ======================================================================
+[2026-10-13 23:46:39] Baseline programs detected: 31
+[2026-10-13 23:46:39] New programs to validate:   617
+[2026-10-13 23:46:39] Initialized duplicate cache with 31 baseline feature vectors.
+[2026-10-13 23:46:39] Loaded existing validation cache: 237 programs already PASSED.
+[2026-10-13 23:46:40] Untested new programs to validate: 380
+[2026-10-13 23:46:40] Checking for duplicate feature vectors and file size limits...
+[2026-10-13 23:46:40]   Duplicate check progress: [100/617]
+[2026-10-13 23:46:40]   Duplicate check progress: [200/617]
+[2026-10-13 23:46:40]   Duplicate check progress: [300/617]
+[2026-10-13 23:46:40] Near-duplicate check complete: 378 unique candidates (349 quarantined).
+[2026-10-13 23:46:40] Starting compilation and execution validation with 6 worker threads...
+[2026-10-13 23:47:09]   Progress: [50/378] validated (Passed: 286, Failed: 350)
+[2026-10-13 23:47:37]   Progress: [100/378] validated (Passed: 335, Failed: 351)
+[2026-10-13 23:48:05]   Progress: [150/378] validated (Passed: 384, Failed: 352)
+[2026-10-13 23:48:34]   Progress: [200/378] validated (Passed: 434, Failed: 352)
+[2026-10-13 23:49:01]   Progress: [250/378] validated (Passed: 483, Failed: 353)
+[2026-10-13 23:49:30]   Progress: [300/378] validated (Passed: 532, Failed: 354)
+[2026-10-13 23:49:58]   Progress: [350/378] validated (Passed: 582, Failed: 354)
+[2026-10-13 23:50:14]   Progress: [378/378] validated (Passed: 610, Failed: 354)
+[2026-10-13 23:50:14] ======================================================================
+[2026-10-13 23:50:14] VALIDATION & FILTERING REPORT:
+[2026-10-13 23:50:14]   Total downloaded: 617
+[2026-10-13 23:50:14]   Total passed:     610
+[2026-10-13 23:50:14]   Total failed:     354
+[2026-10-13 23:50:14]   Failure reasons breakdown:
+[2026-10-13 23:50:14]     - Compilation failed under -O0: 297
+[2026-10-13 23:50:14]     - Execution timed out (>2.0s) under -O0: 35
+[2026-10-13 23:50:14]     - Execution crashed with exit code 1 under -O0: 7
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc16_le_data8.c: 2
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc16_be.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc16_le.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc16_be_nodata.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc8_be.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_crc8_be_data16.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_lasx_xvabsd_2.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_lasx_xvavg_2.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_lasx_xvextl_1.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of mibench_adpcm_rawcaudio.c: 1
+[2026-10-13 23:50:14]     - Execution crashed with exit code 2 under -O0: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_tort_20020226_1.c: 1
+[2026-10-13 23:50:14]     - Duplicate feature vector of llvm_testsuite_tort_20020508_2.c: 1
+[2026-10-13 23:50:14]     - Execution timed out (>2.0s) under -O1: 1
+[2026-10-13 23:50:14] ======================================================================
+[2026-10-13 23:50:14] Saved validation report -> E:\AI_Compiler_Optimization\logs\validation_report.json
+[2026-10-13 23:50:14] Saved validated measurements cache -> E:\AI_Compiler_Optimization\logs\validated_measurements_cache.json
+[2026-10-13 23:51:44] ======================================================================
+[2026-10-13 23:51:44] STARTING STEP 4: RUN FEATURE EXTRACTION & APPEND TO DATASET
+[2026-10-13 23:51:44] ======================================================================
+[2026-10-13 23:51:44] Loaded existing dataset: 31 baseline samples.
+[2026-10-13 23:51:44] Original schema columns (23): ['program', 'num_lines', 'file_size_bytes', 'code_lines', 'num_loops', 'num_functions', 'num_branches', 'num_arithmetic_ops', 'num_pointers', 'num_arrays', 'num_function_calls', 'max_loop_nesting_depth', 'num_div_mod_ops', 'num_recursive_calls', 'num_dynamic_alloc', 'num_structs', 'num_pointer_ops', 'num_nested_loops', 'branch_density', 'loop_per_function', 'arithmetic_per_line', 'call_branch_ratio', 'best_flag']
+[2026-10-13 23:51:44] Found 610 validated programs in cache.
+[2026-10-13 23:51:45]   Extracted features for 100 new programs...
+[2026-10-13 23:51:45]   Extracted features for 200 new programs...
+[2026-10-13 23:51:45]   Extracted features for 300 new programs...
+[2026-10-13 23:51:45]   Extracted features for 400 new programs...
+[2026-10-13 23:51:45]   Extracted features for 500 new programs...
+[2026-10-13 23:51:45]   Extracted features for 600 new programs...
+[2026-10-13 23:51:45] Extraction complete: 610 new rows prepared (0 already existed).
+[2026-10-13 23:51:45] Updated raw performance log (3205 total measurements) -> E:\AI_Compiler_Optimization\data\raw_performance.csv
+[2026-10-13 23:51:45] ======================================================================
+[2026-10-13 23:51:45] DATASET UPDATE COMPLETE:
+[2026-10-13 23:51:45]   - Original rows:      31
+[2026-10-13 23:51:45]   - New rows appended:  610
+[2026-10-13 23:51:45]   - Total dataset rows: 641
+[2026-10-13 23:51:45]   - Saved CSV:          E:\AI_Compiler_Optimization\data\dataset.csv
+[2026-10-13 23:51:45]   - Saved Source CSV:   E:\AI_Compiler_Optimization\data\dataset_with_sources.csv
+[2026-10-13 23:51:45]   - Saved JSON:         E:\AI_Compiler_Optimization\data\dataset.json
+[2026-10-13 23:51:45] ======================================================================
+[2026-10-13 23:52:04] Saved dataset health report -> E:\AI_Compiler_Optimization\results\health_check_report.txt
+
+===========================================================================
+          MODEL COMPARISON: OLD (31 SAMPLES) vs NEW (641 SAMPLES)          
+===========================================================================
+Metric                        Old Model (31 samples)  New Model (641 samples) 
+---------------------------------------------------------------------------
+Dataset Size                  31                      641                     
+Train / Test Split            24 / 7                  512 / 129               
+Test Accuracy                 28.57%                  25.58%                  
+Train Accuracy                91.67%                  94.14%                  
+Overfitting Gap               63.10%                  68.56%                  
+---------------------------------------------------------------------------
+PER-CLASS F1 SCORES:
+  F1 Score (-O0)              0.00                    0.13                    
+  F1 Score (-O1)              0.00                    0.27                    
+  F1 Score (-O2)              0.57                    0.23                    
+  F1 Score (-O3)              0.00                    0.38                    
+  F1 Score (-Os)              0.00                    0.23                    
+---------------------------------------------------------------------------
+Macro Avg F1                  0.14                    0.25                    
+Weighted Avg F1               0.24                    0.25                    
+===========================================================================

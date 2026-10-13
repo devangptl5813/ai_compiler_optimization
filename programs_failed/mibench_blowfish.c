@@ -1,0 +1,2314 @@
+/* crypto/bf/bf_local.h */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+/* WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+ *
+ * Always modify bf_locl.org since bf_locl.h is automatically generated from
+ * it during SSLeay configuration.
+ *
+ * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+ */
+
+#undef c2l
+#define c2l(c,l)	(l =((unsigned long)(*((c)++)))    , \
+			 l|=((unsigned long)(*((c)++)))<< 8L, \
+			 l|=((unsigned long)(*((c)++)))<<16L, \
+			 l|=((unsigned long)(*((c)++)))<<24L)
+
+/* NOTE - c is not incremented as per c2l */
+#undef c2ln
+#define c2ln(c,l1,l2,n)	{ \
+			c+=n; \
+			l1=l2=0; \
+			switch (n) { \
+			case 8: l2 =((unsigned long)(*(--(c))))<<24L; \
+			case 7: l2|=((unsigned long)(*(--(c))))<<16L; \
+			case 6: l2|=((unsigned long)(*(--(c))))<< 8L; \
+			case 5: l2|=((unsigned long)(*(--(c))));     \
+			case 4: l1 =((unsigned long)(*(--(c))))<<24L; \
+			case 3: l1|=((unsigned long)(*(--(c))))<<16L; \
+			case 2: l1|=((unsigned long)(*(--(c))))<< 8L; \
+			case 1: l1|=((unsigned long)(*(--(c))));     \
+				} \
+			}
+
+#undef l2c
+#define l2c(l,c)	(*((c)++)=(unsigned char)(((l)     )&0xff), \
+			 *((c)++)=(unsigned char)(((l)>> 8L)&0xff), \
+			 *((c)++)=(unsigned char)(((l)>>16L)&0xff), \
+			 *((c)++)=(unsigned char)(((l)>>24L)&0xff))
+
+/* NOTE - c is not incremented as per l2c */
+#undef l2cn
+#define l2cn(l1,l2,c,n)	{ \
+			c+=n; \
+			switch (n) { \
+			case 8: *(--(c))=(unsigned char)(((l2)>>24L)&0xff); \
+			case 7: *(--(c))=(unsigned char)(((l2)>>16L)&0xff); \
+			case 6: *(--(c))=(unsigned char)(((l2)>> 8L)&0xff); \
+			case 5: *(--(c))=(unsigned char)(((l2)     )&0xff); \
+			case 4: *(--(c))=(unsigned char)(((l1)>>24L)&0xff); \
+			case 3: *(--(c))=(unsigned char)(((l1)>>16L)&0xff); \
+			case 2: *(--(c))=(unsigned char)(((l1)>> 8L)&0xff); \
+			case 1: *(--(c))=(unsigned char)(((l1)     )&0xff); \
+				} \
+			}
+
+/* NOTE - c is not incremented as per n2l */
+#define n2ln(c,l1,l2,n)	{ \
+			c+=n; \
+			l1=l2=0; \
+			switch (n) { \
+			case 8: l2 =((unsigned long)(*(--(c))))    ; \
+			case 7: l2|=((unsigned long)(*(--(c))))<< 8; \
+			case 6: l2|=((unsigned long)(*(--(c))))<<16; \
+			case 5: l2|=((unsigned long)(*(--(c))))<<24; \
+			case 4: l1 =((unsigned long)(*(--(c))))    ; \
+			case 3: l1|=((unsigned long)(*(--(c))))<< 8; \
+			case 2: l1|=((unsigned long)(*(--(c))))<<16; \
+			case 1: l1|=((unsigned long)(*(--(c))))<<24; \
+				} \
+			}
+
+/* NOTE - c is not incremented as per l2n */
+#define l2nn(l1,l2,c,n)	{ \
+			c+=n; \
+			switch (n) { \
+			case 8: *(--(c))=(unsigned char)(((l2)    )&0xff); \
+			case 7: *(--(c))=(unsigned char)(((l2)>> 8)&0xff); \
+			case 6: *(--(c))=(unsigned char)(((l2)>>16)&0xff); \
+			case 5: *(--(c))=(unsigned char)(((l2)>>24)&0xff); \
+			case 4: *(--(c))=(unsigned char)(((l1)    )&0xff); \
+			case 3: *(--(c))=(unsigned char)(((l1)>> 8)&0xff); \
+			case 2: *(--(c))=(unsigned char)(((l1)>>16)&0xff); \
+			case 1: *(--(c))=(unsigned char)(((l1)>>24)&0xff); \
+				} \
+			}
+
+#undef n2l
+#define n2l(c,l)        (l =((unsigned long)(*((c)++)))<<24L, \
+                         l|=((unsigned long)(*((c)++)))<<16L, \
+                         l|=((unsigned long)(*((c)++)))<< 8L, \
+                         l|=((unsigned long)(*((c)++))))
+
+#undef l2n
+#define l2n(l,c)        (*((c)++)=(unsigned char)(((l)>>24L)&0xff), \
+                         *((c)++)=(unsigned char)(((l)>>16L)&0xff), \
+                         *((c)++)=(unsigned char)(((l)>> 8L)&0xff), \
+                         *((c)++)=(unsigned char)(((l)     )&0xff))
+
+/* This is actually a big endian algorithm, the most significate byte
+ * is used to lookup array 0 */
+
+/* use BF_PTR2 for intel boxes,
+ * BF_PTR for sparc and MIPS/SGI
+ * use nothing for Alpha and HP.
+ */
+#if !defined(BF_PTR) && !defined(BF_PTR2)
+#undef BF_PTR
+#endif
+
+#define BF_M	0x3fc
+#define BF_0	22L
+#define BF_1	14L
+#define BF_2	 6L
+#define BF_3	 2L /* left shift */
+
+#if defined(BF_PTR2)
+
+/* This is basically a special pentium verson */
+#define BF_ENC(LL,R,S,P) \
+	{ \
+	BF_LONG t,u,v; \
+	u=R>>BF_0; \
+	v=R>>BF_1; \
+	u&=BF_M; \
+	v&=BF_M; \
+	t=  *(BF_LONG *)((unsigned char *)&(S[  0])+u); \
+	u=R>>BF_2; \
+	t+= *(BF_LONG *)((unsigned char *)&(S[256])+v); \
+	v=R<<BF_3; \
+	u&=BF_M; \
+	v&=BF_M; \
+	t^= *(BF_LONG *)((unsigned char *)&(S[512])+u); \
+	LL^=P; \
+	t+= *(BF_LONG *)((unsigned char *)&(S[768])+v); \
+	LL^=t; \
+	}
+
+#elif defined(BF_PTR)
+
+/* This is normally very good */
+
+#define BF_ENC(LL,R,S,P) \
+	LL^=P; \
+	LL^= (((*(BF_LONG *)((unsigned char *)&(S[  0])+((R>>BF_0)&BF_M))+ \
+		*(BF_LONG *)((unsigned char *)&(S[256])+((R>>BF_1)&BF_M)))^ \
+		*(BF_LONG *)((unsigned char *)&(S[512])+((R>>BF_2)&BF_M)))+ \
+		*(BF_LONG *)((unsigned char *)&(S[768])+((R<<BF_3)&BF_M)));
+#else
+
+/* This will always work, even on 64 bit machines and strangly enough,
+ * on the Alpha it is faster than the pointer versions (both 32 and 64
+ * versions of BF_LONG) */
+
+#define BF_ENC(LL,R,S,P) \
+	LL^=P; \
+	LL^=(((	S[        (R>>24L)      ] + \
+		S[0x0100+((R>>16L)&0xff)])^ \
+		S[0x0200+((R>> 8L)&0xff)])+ \
+		S[0x0300+((R     )&0xff)])&0xffffffff;
+#endif
+
+/* crypto/bf/bf_pi.h */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+static BF_KEY bf_init= {
+	{
+	0x243f6a88L, 0x85a308d3L, 0x13198a2eL, 0x03707344L,
+	0xa4093822L, 0x299f31d0L, 0x082efa98L, 0xec4e6c89L,
+	0x452821e6L, 0x38d01377L, 0xbe5466cfL, 0x34e90c6cL,
+	0xc0ac29b7L, 0xc97c50ddL, 0x3f84d5b5L, 0xb5470917L,
+	0x9216d5d9L, 0x8979fb1b
+	},{
+	0xd1310ba6L, 0x98dfb5acL, 0x2ffd72dbL, 0xd01adfb7L, 
+	0xb8e1afedL, 0x6a267e96L, 0xba7c9045L, 0xf12c7f99L, 
+	0x24a19947L, 0xb3916cf7L, 0x0801f2e2L, 0x858efc16L, 
+	0x636920d8L, 0x71574e69L, 0xa458fea3L, 0xf4933d7eL, 
+	0x0d95748fL, 0x728eb658L, 0x718bcd58L, 0x82154aeeL, 
+	0x7b54a41dL, 0xc25a59b5L, 0x9c30d539L, 0x2af26013L, 
+	0xc5d1b023L, 0x286085f0L, 0xca417918L, 0xb8db38efL, 
+	0x8e79dcb0L, 0x603a180eL, 0x6c9e0e8bL, 0xb01e8a3eL, 
+	0xd71577c1L, 0xbd314b27L, 0x78af2fdaL, 0x55605c60L, 
+	0xe65525f3L, 0xaa55ab94L, 0x57489862L, 0x63e81440L, 
+	0x55ca396aL, 0x2aab10b6L, 0xb4cc5c34L, 0x1141e8ceL, 
+	0xa15486afL, 0x7c72e993L, 0xb3ee1411L, 0x636fbc2aL, 
+	0x2ba9c55dL, 0x741831f6L, 0xce5c3e16L, 0x9b87931eL, 
+	0xafd6ba33L, 0x6c24cf5cL, 0x7a325381L, 0x28958677L, 
+	0x3b8f4898L, 0x6b4bb9afL, 0xc4bfe81bL, 0x66282193L, 
+	0x61d809ccL, 0xfb21a991L, 0x487cac60L, 0x5dec8032L, 
+	0xef845d5dL, 0xe98575b1L, 0xdc262302L, 0xeb651b88L, 
+	0x23893e81L, 0xd396acc5L, 0x0f6d6ff3L, 0x83f44239L, 
+	0x2e0b4482L, 0xa4842004L, 0x69c8f04aL, 0x9e1f9b5eL, 
+	0x21c66842L, 0xf6e96c9aL, 0x670c9c61L, 0xabd388f0L, 
+	0x6a51a0d2L, 0xd8542f68L, 0x960fa728L, 0xab5133a3L, 
+	0x6eef0b6cL, 0x137a3be4L, 0xba3bf050L, 0x7efb2a98L, 
+	0xa1f1651dL, 0x39af0176L, 0x66ca593eL, 0x82430e88L, 
+	0x8cee8619L, 0x456f9fb4L, 0x7d84a5c3L, 0x3b8b5ebeL, 
+	0xe06f75d8L, 0x85c12073L, 0x401a449fL, 0x56c16aa6L, 
+	0x4ed3aa62L, 0x363f7706L, 0x1bfedf72L, 0x429b023dL, 
+	0x37d0d724L, 0xd00a1248L, 0xdb0fead3L, 0x49f1c09bL, 
+	0x075372c9L, 0x80991b7bL, 0x25d479d8L, 0xf6e8def7L, 
+	0xe3fe501aL, 0xb6794c3bL, 0x976ce0bdL, 0x04c006baL, 
+	0xc1a94fb6L, 0x409f60c4L, 0x5e5c9ec2L, 0x196a2463L, 
+	0x68fb6fafL, 0x3e6c53b5L, 0x1339b2ebL, 0x3b52ec6fL, 
+	0x6dfc511fL, 0x9b30952cL, 0xcc814544L, 0xaf5ebd09L, 
+	0xbee3d004L, 0xde334afdL, 0x660f2807L, 0x192e4bb3L, 
+	0xc0cba857L, 0x45c8740fL, 0xd20b5f39L, 0xb9d3fbdbL, 
+	0x5579c0bdL, 0x1a60320aL, 0xd6a100c6L, 0x402c7279L, 
+	0x679f25feL, 0xfb1fa3ccL, 0x8ea5e9f8L, 0xdb3222f8L, 
+	0x3c7516dfL, 0xfd616b15L, 0x2f501ec8L, 0xad0552abL, 
+	0x323db5faL, 0xfd238760L, 0x53317b48L, 0x3e00df82L, 
+	0x9e5c57bbL, 0xca6f8ca0L, 0x1a87562eL, 0xdf1769dbL, 
+	0xd542a8f6L, 0x287effc3L, 0xac6732c6L, 0x8c4f5573L, 
+	0x695b27b0L, 0xbbca58c8L, 0xe1ffa35dL, 0xb8f011a0L, 
+	0x10fa3d98L, 0xfd2183b8L, 0x4afcb56cL, 0x2dd1d35bL, 
+	0x9a53e479L, 0xb6f84565L, 0xd28e49bcL, 0x4bfb9790L, 
+	0xe1ddf2daL, 0xa4cb7e33L, 0x62fb1341L, 0xcee4c6e8L, 
+	0xef20cadaL, 0x36774c01L, 0xd07e9efeL, 0x2bf11fb4L, 
+	0x95dbda4dL, 0xae909198L, 0xeaad8e71L, 0x6b93d5a0L, 
+	0xd08ed1d0L, 0xafc725e0L, 0x8e3c5b2fL, 0x8e7594b7L, 
+	0x8ff6e2fbL, 0xf2122b64L, 0x8888b812L, 0x900df01cL, 
+	0x4fad5ea0L, 0x688fc31cL, 0xd1cff191L, 0xb3a8c1adL, 
+	0x2f2f2218L, 0xbe0e1777L, 0xea752dfeL, 0x8b021fa1L, 
+	0xe5a0cc0fL, 0xb56f74e8L, 0x18acf3d6L, 0xce89e299L, 
+	0xb4a84fe0L, 0xfd13e0b7L, 0x7cc43b81L, 0xd2ada8d9L, 
+	0x165fa266L, 0x80957705L, 0x93cc7314L, 0x211a1477L, 
+	0xe6ad2065L, 0x77b5fa86L, 0xc75442f5L, 0xfb9d35cfL, 
+	0xebcdaf0cL, 0x7b3e89a0L, 0xd6411bd3L, 0xae1e7e49L, 
+	0x00250e2dL, 0x2071b35eL, 0x226800bbL, 0x57b8e0afL, 
+	0x2464369bL, 0xf009b91eL, 0x5563911dL, 0x59dfa6aaL, 
+	0x78c14389L, 0xd95a537fL, 0x207d5ba2L, 0x02e5b9c5L, 
+	0x83260376L, 0x6295cfa9L, 0x11c81968L, 0x4e734a41L, 
+	0xb3472dcaL, 0x7b14a94aL, 0x1b510052L, 0x9a532915L, 
+	0xd60f573fL, 0xbc9bc6e4L, 0x2b60a476L, 0x81e67400L, 
+	0x08ba6fb5L, 0x571be91fL, 0xf296ec6bL, 0x2a0dd915L, 
+	0xb6636521L, 0xe7b9f9b6L, 0xff34052eL, 0xc5855664L, 
+	0x53b02d5dL, 0xa99f8fa1L, 0x08ba4799L, 0x6e85076aL, 
+	0x4b7a70e9L, 0xb5b32944L, 0xdb75092eL, 0xc4192623L, 
+	0xad6ea6b0L, 0x49a7df7dL, 0x9cee60b8L, 0x8fedb266L, 
+	0xecaa8c71L, 0x699a17ffL, 0x5664526cL, 0xc2b19ee1L, 
+	0x193602a5L, 0x75094c29L, 0xa0591340L, 0xe4183a3eL, 
+	0x3f54989aL, 0x5b429d65L, 0x6b8fe4d6L, 0x99f73fd6L, 
+	0xa1d29c07L, 0xefe830f5L, 0x4d2d38e6L, 0xf0255dc1L, 
+	0x4cdd2086L, 0x8470eb26L, 0x6382e9c6L, 0x021ecc5eL, 
+	0x09686b3fL, 0x3ebaefc9L, 0x3c971814L, 0x6b6a70a1L, 
+	0x687f3584L, 0x52a0e286L, 0xb79c5305L, 0xaa500737L, 
+	0x3e07841cL, 0x7fdeae5cL, 0x8e7d44ecL, 0x5716f2b8L, 
+	0xb03ada37L, 0xf0500c0dL, 0xf01c1f04L, 0x0200b3ffL, 
+	0xae0cf51aL, 0x3cb574b2L, 0x25837a58L, 0xdc0921bdL, 
+	0xd19113f9L, 0x7ca92ff6L, 0x94324773L, 0x22f54701L, 
+	0x3ae5e581L, 0x37c2dadcL, 0xc8b57634L, 0x9af3dda7L, 
+	0xa9446146L, 0x0fd0030eL, 0xecc8c73eL, 0xa4751e41L, 
+	0xe238cd99L, 0x3bea0e2fL, 0x3280bba1L, 0x183eb331L, 
+	0x4e548b38L, 0x4f6db908L, 0x6f420d03L, 0xf60a04bfL, 
+	0x2cb81290L, 0x24977c79L, 0x5679b072L, 0xbcaf89afL, 
+	0xde9a771fL, 0xd9930810L, 0xb38bae12L, 0xdccf3f2eL, 
+	0x5512721fL, 0x2e6b7124L, 0x501adde6L, 0x9f84cd87L, 
+	0x7a584718L, 0x7408da17L, 0xbc9f9abcL, 0xe94b7d8cL, 
+	0xec7aec3aL, 0xdb851dfaL, 0x63094366L, 0xc464c3d2L, 
+	0xef1c1847L, 0x3215d908L, 0xdd433b37L, 0x24c2ba16L, 
+	0x12a14d43L, 0x2a65c451L, 0x50940002L, 0x133ae4ddL, 
+	0x71dff89eL, 0x10314e55L, 0x81ac77d6L, 0x5f11199bL, 
+	0x043556f1L, 0xd7a3c76bL, 0x3c11183bL, 0x5924a509L, 
+	0xf28fe6edL, 0x97f1fbfaL, 0x9ebabf2cL, 0x1e153c6eL, 
+	0x86e34570L, 0xeae96fb1L, 0x860e5e0aL, 0x5a3e2ab3L, 
+	0x771fe71cL, 0x4e3d06faL, 0x2965dcb9L, 0x99e71d0fL, 
+	0x803e89d6L, 0x5266c825L, 0x2e4cc978L, 0x9c10b36aL, 
+	0xc6150ebaL, 0x94e2ea78L, 0xa5fc3c53L, 0x1e0a2df4L, 
+	0xf2f74ea7L, 0x361d2b3dL, 0x1939260fL, 0x19c27960L, 
+	0x5223a708L, 0xf71312b6L, 0xebadfe6eL, 0xeac31f66L, 
+	0xe3bc4595L, 0xa67bc883L, 0xb17f37d1L, 0x018cff28L, 
+	0xc332ddefL, 0xbe6c5aa5L, 0x65582185L, 0x68ab9802L, 
+	0xeecea50fL, 0xdb2f953bL, 0x2aef7dadL, 0x5b6e2f84L, 
+	0x1521b628L, 0x29076170L, 0xecdd4775L, 0x619f1510L, 
+	0x13cca830L, 0xeb61bd96L, 0x0334fe1eL, 0xaa0363cfL, 
+	0xb5735c90L, 0x4c70a239L, 0xd59e9e0bL, 0xcbaade14L, 
+	0xeecc86bcL, 0x60622ca7L, 0x9cab5cabL, 0xb2f3846eL, 
+	0x648b1eafL, 0x19bdf0caL, 0xa02369b9L, 0x655abb50L, 
+	0x40685a32L, 0x3c2ab4b3L, 0x319ee9d5L, 0xc021b8f7L, 
+	0x9b540b19L, 0x875fa099L, 0x95f7997eL, 0x623d7da8L, 
+	0xf837889aL, 0x97e32d77L, 0x11ed935fL, 0x16681281L, 
+	0x0e358829L, 0xc7e61fd6L, 0x96dedfa1L, 0x7858ba99L, 
+	0x57f584a5L, 0x1b227263L, 0x9b83c3ffL, 0x1ac24696L, 
+	0xcdb30aebL, 0x532e3054L, 0x8fd948e4L, 0x6dbc3128L, 
+	0x58ebf2efL, 0x34c6ffeaL, 0xfe28ed61L, 0xee7c3c73L, 
+	0x5d4a14d9L, 0xe864b7e3L, 0x42105d14L, 0x203e13e0L, 
+	0x45eee2b6L, 0xa3aaabeaL, 0xdb6c4f15L, 0xfacb4fd0L, 
+	0xc742f442L, 0xef6abbb5L, 0x654f3b1dL, 0x41cd2105L, 
+	0xd81e799eL, 0x86854dc7L, 0xe44b476aL, 0x3d816250L, 
+	0xcf62a1f2L, 0x5b8d2646L, 0xfc8883a0L, 0xc1c7b6a3L, 
+	0x7f1524c3L, 0x69cb7492L, 0x47848a0bL, 0x5692b285L, 
+	0x095bbf00L, 0xad19489dL, 0x1462b174L, 0x23820e00L, 
+	0x58428d2aL, 0x0c55f5eaL, 0x1dadf43eL, 0x233f7061L, 
+	0x3372f092L, 0x8d937e41L, 0xd65fecf1L, 0x6c223bdbL, 
+	0x7cde3759L, 0xcbee7460L, 0x4085f2a7L, 0xce77326eL, 
+	0xa6078084L, 0x19f8509eL, 0xe8efd855L, 0x61d99735L, 
+	0xa969a7aaL, 0xc50c06c2L, 0x5a04abfcL, 0x800bcadcL, 
+	0x9e447a2eL, 0xc3453484L, 0xfdd56705L, 0x0e1e9ec9L, 
+	0xdb73dbd3L, 0x105588cdL, 0x675fda79L, 0xe3674340L, 
+	0xc5c43465L, 0x713e38d8L, 0x3d28f89eL, 0xf16dff20L, 
+	0x153e21e7L, 0x8fb03d4aL, 0xe6e39f2bL, 0xdb83adf7L, 
+	0xe93d5a68L, 0x948140f7L, 0xf64c261cL, 0x94692934L, 
+	0x411520f7L, 0x7602d4f7L, 0xbcf46b2eL, 0xd4a20068L, 
+	0xd4082471L, 0x3320f46aL, 0x43b7d4b7L, 0x500061afL, 
+	0x1e39f62eL, 0x97244546L, 0x14214f74L, 0xbf8b8840L, 
+	0x4d95fc1dL, 0x96b591afL, 0x70f4ddd3L, 0x66a02f45L, 
+	0xbfbc09ecL, 0x03bd9785L, 0x7fac6dd0L, 0x31cb8504L, 
+	0x96eb27b3L, 0x55fd3941L, 0xda2547e6L, 0xabca0a9aL, 
+	0x28507825L, 0x530429f4L, 0x0a2c86daL, 0xe9b66dfbL, 
+	0x68dc1462L, 0xd7486900L, 0x680ec0a4L, 0x27a18deeL, 
+	0x4f3ffea2L, 0xe887ad8cL, 0xb58ce006L, 0x7af4d6b6L, 
+	0xaace1e7cL, 0xd3375fecL, 0xce78a399L, 0x406b2a42L, 
+	0x20fe9e35L, 0xd9f385b9L, 0xee39d7abL, 0x3b124e8bL, 
+	0x1dc9faf7L, 0x4b6d1856L, 0x26a36631L, 0xeae397b2L, 
+	0x3a6efa74L, 0xdd5b4332L, 0x6841e7f7L, 0xca7820fbL, 
+	0xfb0af54eL, 0xd8feb397L, 0x454056acL, 0xba489527L, 
+	0x55533a3aL, 0x20838d87L, 0xfe6ba9b7L, 0xd096954bL, 
+	0x55a867bcL, 0xa1159a58L, 0xcca92963L, 0x99e1db33L, 
+	0xa62a4a56L, 0x3f3125f9L, 0x5ef47e1cL, 0x9029317cL, 
+	0xfdf8e802L, 0x04272f70L, 0x80bb155cL, 0x05282ce3L, 
+	0x95c11548L, 0xe4c66d22L, 0x48c1133fL, 0xc70f86dcL, 
+	0x07f9c9eeL, 0x41041f0fL, 0x404779a4L, 0x5d886e17L, 
+	0x325f51ebL, 0xd59bc0d1L, 0xf2bcc18fL, 0x41113564L, 
+	0x257b7834L, 0x602a9c60L, 0xdff8e8a3L, 0x1f636c1bL, 
+	0x0e12b4c2L, 0x02e1329eL, 0xaf664fd1L, 0xcad18115L, 
+	0x6b2395e0L, 0x333e92e1L, 0x3b240b62L, 0xeebeb922L, 
+	0x85b2a20eL, 0xe6ba0d99L, 0xde720c8cL, 0x2da2f728L, 
+	0xd0127845L, 0x95b794fdL, 0x647d0862L, 0xe7ccf5f0L, 
+	0x5449a36fL, 0x877d48faL, 0xc39dfd27L, 0xf33e8d1eL, 
+	0x0a476341L, 0x992eff74L, 0x3a6f6eabL, 0xf4f8fd37L, 
+	0xa812dc60L, 0xa1ebddf8L, 0x991be14cL, 0xdb6e6b0dL, 
+	0xc67b5510L, 0x6d672c37L, 0x2765d43bL, 0xdcd0e804L, 
+	0xf1290dc7L, 0xcc00ffa3L, 0xb5390f92L, 0x690fed0bL, 
+	0x667b9ffbL, 0xcedb7d9cL, 0xa091cf0bL, 0xd9155ea3L, 
+	0xbb132f88L, 0x515bad24L, 0x7b9479bfL, 0x763bd6ebL, 
+	0x37392eb3L, 0xcc115979L, 0x8026e297L, 0xf42e312dL, 
+	0x6842ada7L, 0xc66a2b3bL, 0x12754cccL, 0x782ef11cL, 
+	0x6a124237L, 0xb79251e7L, 0x06a1bbe6L, 0x4bfb6350L, 
+	0x1a6b1018L, 0x11caedfaL, 0x3d25bdd8L, 0xe2e1c3c9L, 
+	0x44421659L, 0x0a121386L, 0xd90cec6eL, 0xd5abea2aL, 
+	0x64af674eL, 0xda86a85fL, 0xbebfe988L, 0x64e4c3feL, 
+	0x9dbc8057L, 0xf0f7c086L, 0x60787bf8L, 0x6003604dL, 
+	0xd1fd8346L, 0xf6381fb0L, 0x7745ae04L, 0xd736fcccL, 
+	0x83426b33L, 0xf01eab71L, 0xb0804187L, 0x3c005e5fL, 
+	0x77a057beL, 0xbde8ae24L, 0x55464299L, 0xbf582e61L, 
+	0x4e58f48fL, 0xf2ddfda2L, 0xf474ef38L, 0x8789bdc2L, 
+	0x5366f9c3L, 0xc8b38e74L, 0xb475f255L, 0x46fcd9b9L, 
+	0x7aeb2661L, 0x8b1ddf84L, 0x846a0e79L, 0x915f95e2L, 
+	0x466e598eL, 0x20b45770L, 0x8cd55591L, 0xc902de4cL, 
+	0xb90bace1L, 0xbb8205d0L, 0x11a86248L, 0x7574a99eL, 
+	0xb77f19b6L, 0xe0a9dc09L, 0x662d09a1L, 0xc4324633L, 
+	0xe85a1f02L, 0x09f0be8cL, 0x4a99a025L, 0x1d6efe10L, 
+	0x1ab93d1dL, 0x0ba5a4dfL, 0xa186f20fL, 0x2868f169L, 
+	0xdcb7da83L, 0x573906feL, 0xa1e2ce9bL, 0x4fcd7f52L, 
+	0x50115e01L, 0xa70683faL, 0xa002b5c4L, 0x0de6d027L, 
+	0x9af88c27L, 0x773f8641L, 0xc3604c06L, 0x61a806b5L, 
+	0xf0177a28L, 0xc0f586e0L, 0x006058aaL, 0x30dc7d62L, 
+	0x11e69ed7L, 0x2338ea63L, 0x53c2dd94L, 0xc2c21634L, 
+	0xbbcbee56L, 0x90bcb6deL, 0xebfc7da1L, 0xce591d76L, 
+	0x6f05e409L, 0x4b7c0188L, 0x39720a3dL, 0x7c927c24L, 
+	0x86e3725fL, 0x724d9db9L, 0x1ac15bb4L, 0xd39eb8fcL, 
+	0xed545578L, 0x08fca5b5L, 0xd83d7cd3L, 0x4dad0fc4L, 
+	0x1e50ef5eL, 0xb161e6f8L, 0xa28514d9L, 0x6c51133cL, 
+	0x6fd5c7e7L, 0x56e14ec4L, 0x362abfceL, 0xddc6c837L, 
+	0xd79a3234L, 0x92638212L, 0x670efa8eL, 0x406000e0L, 
+	0x3a39ce37L, 0xd3faf5cfL, 0xabc27737L, 0x5ac52d1bL, 
+	0x5cb0679eL, 0x4fa33742L, 0xd3822740L, 0x99bc9bbeL, 
+	0xd5118e9dL, 0xbf0f7315L, 0xd62d1c7eL, 0xc700c47bL, 
+	0xb78c1b6bL, 0x21a19045L, 0xb26eb1beL, 0x6a366eb4L, 
+	0x5748ab2fL, 0xbc946e79L, 0xc6a376d2L, 0x6549c2c8L, 
+	0x530ff8eeL, 0x468dde7dL, 0xd5730a1dL, 0x4cd04dc6L, 
+	0x2939bbdbL, 0xa9ba4650L, 0xac9526e8L, 0xbe5ee304L, 
+	0xa1fad5f0L, 0x6a2d519aL, 0x63ef8ce2L, 0x9a86ee22L, 
+	0xc089c2b8L, 0x43242ef6L, 0xa51e03aaL, 0x9cf2d0a4L, 
+	0x83c061baL, 0x9be96a4dL, 0x8fe51550L, 0xba645bd6L, 
+	0x2826a2f9L, 0xa73a3ae1L, 0x4ba99586L, 0xef5562e9L, 
+	0xc72fefd3L, 0xf752f7daL, 0x3f046f69L, 0x77fa0a59L, 
+	0x80e4a915L, 0x87b08601L, 0x9b09e6adL, 0x3b3ee593L, 
+	0xe990fd5aL, 0x9e34d797L, 0x2cf0b7d9L, 0x022b8b51L, 
+	0x96d5ac3aL, 0x017da67dL, 0xd1cf3ed6L, 0x7c7d2d28L, 
+	0x1f9f25cfL, 0xadf2b89bL, 0x5ad6b472L, 0x5a88f54cL, 
+	0xe029ac71L, 0xe019a5e6L, 0x47b0acfdL, 0xed93fa9bL, 
+	0xe8d3c48dL, 0x283b57ccL, 0xf8d56629L, 0x79132e28L, 
+	0x785f0191L, 0xed756055L, 0xf7960e44L, 0xe3d35e8cL, 
+	0x15056dd4L, 0x88f46dbaL, 0x03a16125L, 0x0564f0bdL, 
+	0xc3eb9e15L, 0x3c9057a2L, 0x97271aecL, 0xa93a072aL, 
+	0x1b3f6d9bL, 0x1e6321f5L, 0xf59c66fbL, 0x26dcf319L, 
+	0x7533d928L, 0xb155fdf5L, 0x03563482L, 0x8aba3cbbL, 
+	0x28517711L, 0xc20ad9f8L, 0xabcc5167L, 0xccad925fL, 
+	0x4de81751L, 0x3830dc8eL, 0x379d5862L, 0x9320f991L, 
+	0xea7a90c2L, 0xfb3e7bceL, 0x5121ce64L, 0x774fbe32L, 
+	0xa8b6e37eL, 0xc3293d46L, 0x48de5369L, 0x6413e680L, 
+	0xa2ae0810L, 0xdd6db224L, 0x69852dfdL, 0x09072166L, 
+	0xb39a460aL, 0x6445c0ddL, 0x586cdecfL, 0x1c20c8aeL, 
+	0x5bbef7ddL, 0x1b588d40L, 0xccd2017fL, 0x6bb4e3bbL, 
+	0xdda26a7eL, 0x3a59ff45L, 0x3e350a44L, 0xbcb4cdd5L, 
+	0x72eacea8L, 0xfa6484bbL, 0x8d6612aeL, 0xbf3c6f47L, 
+	0xd29be463L, 0x542f5d9eL, 0xaec2771bL, 0xf64e6370L, 
+	0x740e0d8dL, 0xe75b1357L, 0xf8721671L, 0xaf537d5dL, 
+	0x4040cb08L, 0x4eb4e2ccL, 0x34d2466aL, 0x0115af84L, 
+	0xe1b00428L, 0x95983a1dL, 0x06b89fb4L, 0xce6ea048L, 
+	0x6f3f3b82L, 0x3520ab82L, 0x011a1d4bL, 0x277227f8L, 
+	0x611560b1L, 0xe7933fdcL, 0xbb3a792bL, 0x344525bdL, 
+	0xa08839e1L, 0x51ce794bL, 0x2f32c9b7L, 0xa01fbac9L, 
+	0xe01cc87eL, 0xbcc7d1f6L, 0xcf0111c3L, 0xa1e8aac7L, 
+	0x1a908749L, 0xd44fbd9aL, 0xd0dadecbL, 0xd50ada38L, 
+	0x0339c32aL, 0xc6913667L, 0x8df9317cL, 0xe0b12b4fL, 
+	0xf79e59b7L, 0x43f5bb3aL, 0xf2d519ffL, 0x27d9459cL, 
+	0xbf97222cL, 0x15e6fc2aL, 0x0f91fc71L, 0x9b941525L, 
+	0xfae59361L, 0xceb69cebL, 0xc2a86459L, 0x12baa8d1L, 
+	0xb6c1075eL, 0xe3056a0cL, 0x10d25065L, 0xcb03a442L, 
+	0xe0ec6e0eL, 0x1698db3bL, 0x4c98a0beL, 0x3278e964L, 
+	0x9f1f9532L, 0xe0d392dfL, 0xd3a0342bL, 0x8971f21eL, 
+	0x1b0a7441L, 0x4ba3348cL, 0xc5be7120L, 0xc37632d8L, 
+	0xdf359f8dL, 0x9b992f2eL, 0xe60b6f47L, 0x0fe3f11dL, 
+	0xe54cda54L, 0x1edad891L, 0xce6279cfL, 0xcd3e7e6fL, 
+	0x1618b166L, 0xfd2c1d05L, 0x848fd2c5L, 0xf6fb2299L, 
+	0xf523f357L, 0xa6327623L, 0x93a83531L, 0x56cccd02L, 
+	0xacf08162L, 0x5a75ebb5L, 0x6e163697L, 0x88d273ccL, 
+	0xde966292L, 0x81b949d0L, 0x4c50901bL, 0x71c65614L, 
+	0xe6c6c7bdL, 0x327a140aL, 0x45e1d006L, 0xc3f27b9aL, 
+	0xc9aa53fdL, 0x62a80f00L, 0xbb25bfe2L, 0x35bdd2f6L, 
+	0x71126905L, 0xb2040222L, 0xb6cbcf7cL, 0xcd769c2bL, 
+	0x53113ec0L, 0x1640e3d3L, 0x38abbd60L, 0x2547adf0L, 
+	0xba38209cL, 0xf746ce76L, 0x77afa1c5L, 0x20756060L, 
+	0x85cbfe4eL, 0x8ae88dd8L, 0x7aaaf9b0L, 0x4cf9aa7eL, 
+	0x1948c25cL, 0x02fb8a8cL, 0x01c36ae4L, 0xd6ebe1f9L, 
+	0x90d4f869L, 0xa65cdea0L, 0x3f09252dL, 0xc208e69fL, 
+	0xb74e6132L, 0xce77e25bL, 0x578fdfe3L, 0x3ac372e6L, 
+	}
+	};
+
+
+/* crypto/bf/blowfish.h */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#ifndef HEADER_BLOWFISH_H
+#define HEADER_BLOWFISH_H
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+#define BF_ENCRYPT	1
+#define BF_DECRYPT	0
+
+/* If you make this 'unsigned int' the pointer variants will work on
+ * the Alpha, otherwise they will not.  Strangly using the '8 byte'
+ * BF_LONG and the default 'non-pointer' inner loop is the best configuration
+ * for the Alpha */
+#define BF_LONG unsigned long
+
+#define BF_ROUNDS	16
+#define BF_BLOCK	8
+
+typedef struct bf_key_st
+	{
+	BF_LONG P[BF_ROUNDS+2];
+	BF_LONG S[4*256];
+	} BF_KEY;
+
+#ifndef NOPROTO
+ 
+void BF_set_key(BF_KEY *key, int len, unsigned char *data);
+void BF_ecb_encrypt(unsigned char *in,unsigned char *out,BF_KEY *key,
+	int encrypt);
+void BF_encrypt(BF_LONG *data,BF_KEY *key,int encrypt);
+void BF_cbc_encrypt(unsigned char *in, unsigned char *out, long length,
+	BF_KEY *ks, unsigned char *iv, int encrypt);
+void BF_cfb64_encrypt(unsigned char *in, unsigned char *out, long length,
+	BF_KEY *schedule, unsigned char *ivec, int *num, int encrypt);
+void BF_ofb64_encrypt(unsigned char *in, unsigned char *out, long length,
+	BF_KEY *schedule, unsigned char *ivec, int *num);
+char *BF_options(void);
+
+#else
+
+void BF_set_key();
+void BF_ecb_encrypt();
+void BF_encrypt();
+void BF_cbc_encrypt();
+void BF_cfb64_encrypt();
+void BF_ofb64_encrypt();
+char *BF_options();
+
+#endif
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif
+
+/* crypto/bf/bfspeed.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+/* 11-Sep-92 Andrew Daviel   Support for Silicon Graphics IRIX added */
+/* 06-Apr-92 Luke Brennan    Support for VMS and add extra signal calls */
+
+#ifndef MSDOS
+#define TIMES
+#endif
+
+#include <stdio.h>
+#ifndef MSDOS
+
+#else
+#include <io.h>
+extern int exit();
+#endif
+#include <signal.h>
+#ifndef VMS
+#ifndef _IRIX
+#include <time.h>
+#endif
+#ifdef TIMES
+#include <sys/types.h>
+#include <sys/times.h>
+#endif
+#else /* VMS */
+#include <types.h>
+struct tms {
+	time_t tms_utime;
+	time_t tms_stime;
+	time_t tms_uchild;	/* I dunno...  */
+	time_t tms_uchildsys;	/* so these names are a guess :-) */
+	}
+#endif
+#ifndef TIMES
+#include <sys/timeb.h>
+#endif
+
+#ifdef sun
+#include <limits.h>
+#include <sys/param.h>
+#endif
+
+#include "blowfish.h"
+
+/* The following if from times(3) man page.  It may need to be changed */
+#ifndef HZ
+#ifndef CLK_TCK
+#ifndef VMS
+#define HZ	100.0
+#else /* VMS */
+#define HZ	100.0
+#endif
+#else /* CLK_TCK */
+#define HZ ((double)CLK_TCK)
+#endif
+#endif
+
+#define BUFSIZE	((long)1024)
+long run=0;
+
+#ifndef NOPROTO
+double Time_F(int s);
+#else
+double Time_F();
+#endif
+
+#ifdef SIGALRM
+#if defined(__STDC__) || defined(sgi) || defined(_AIX)
+#define SIGRETTYPE void
+#else
+#define SIGRETTYPE int
+#endif
+
+#ifndef NOPROTO
+SIGRETTYPE sig_done(int sig);
+#else
+SIGRETTYPE sig_done();
+#endif
+
+SIGRETTYPE sig_done(sig)
+int sig;
+	{
+	signal(SIGALRM,sig_done);
+	run=0;
+#ifdef LINT
+	sig=sig;
+#endif
+	}
+#endif
+
+#define START	0
+#define STOP	1
+
+double Time_F(s)
+int s;
+	{
+	double ret;
+#ifdef TIMES
+	static struct tms tstart,tend;
+
+	if (s == START)
+		{
+		times(&tstart);
+		return(0);
+		}
+	else
+		{
+		times(&tend);
+		ret=((double)(tend.tms_utime-tstart.tms_utime))/HZ;
+		return((ret == 0.0)?1e-6:ret);
+		}
+#else /* !times() */
+	static struct timeb tstart,tend;
+	long i;
+
+	if (s == START)
+		{
+		ftime(&tstart);
+		return(0);
+		}
+	else
+		{
+		ftime(&tend);
+		i=(long)tend.millitm-(long)tstart.millitm;
+		ret=((double)(tend.time-tstart.time))+((double)i)/1e3;
+		return((ret == 0.0)?1e-6:ret);
+		}
+#endif
+	}
+
+int main(argc,argv)
+int argc;
+char **argv;
+	{
+	long count;
+	static unsigned char buf[BUFSIZE];
+	static unsigned char key[] ={
+			0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0,
+			0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10,
+			};
+	BF_KEY sch;
+	double a,b,c,d;
+#ifndef SIGALRM
+	long ca,cb,cc;
+#endif
+
+#ifndef TIMES
+	printf("To get the most acurate results, try to run this\n");
+	printf("program when this computer is idle.\n");
+#endif
+
+#ifndef SIGALRM
+	printf("First we calculate the approximate speed ...\n");
+	BF_set_key(&sch,16,key);
+	count=10;
+	do	{
+		long i;
+		BF_LONG data[2];
+
+		count*=2;
+		Time_F(START);
+		for (i=count; i; i--)
+			BF_encrypt(data,&sch,BF_ENCRYPT);
+		d=Time_F(STOP);
+		} while (d < 3.0);
+	ca=count/512;
+	cb=count;
+	cc=count*8/BUFSIZE+1;
+	printf("Doing BF_set_key %ld times\n",ca);
+#define COND(d)	(count != (d))
+#define COUNT(d) (d)
+#else
+#define COND(c)	(run)
+#define COUNT(d) (count)
+	signal(SIGALRM,sig_done);
+	printf("Doing BF_set_key for 10 seconds\n");
+	alarm(10);
+#endif
+
+	Time_F(START);
+	for (count=0,run=1; COND(ca); count++)
+		BF_set_key(&sch,16,key);
+	d=Time_F(STOP);
+	printf("%ld blowfish set_key's in %.2f seconds\n",count,d);
+	a=((double)COUNT(ca))/d;
+
+#ifdef SIGALRM
+	printf("Doing BF_encrypt's for 10 seconds\n");
+	alarm(10);
+#else
+	printf("Doing BF_encrypt %ld times\n",cb);
+#endif
+	Time_F(START);
+	for (count=0,run=1; COND(cb); count++)
+		{
+		BF_LONG data[2];
+
+		BF_encrypt(data,&sch,BF_ENCRYPT);
+		}
+	d=Time_F(STOP);
+	printf("%ld BF_encrypt's in %.2f second\n",count,d);
+	b=((double)COUNT(cb)*8)/d;
+
+#ifdef SIGALRM
+	printf("Doing BF_cbc_encrypt on %ld byte blocks for 10 seconds\n",
+		BUFSIZE);
+	alarm(10);
+#else
+	printf("Doing BF_cbc_encrypt %ld times on %ld byte blocks\n",cc,
+		BUFSIZE);
+#endif
+	Time_F(START);
+	for (count=0,run=1; COND(cc); count++)
+		BF_cbc_encrypt(buf,buf,BUFSIZE,&sch,
+			&(key[0]),BF_ENCRYPT);
+	d=Time_F(STOP);
+	printf("%ld BF_cbc_encrypt's of %ld byte blocks in %.2f second\n",
+		count,BUFSIZE,d);
+	c=((double)COUNT(cc)*BUFSIZE)/d;
+
+	printf("blowfish set_key       per sec = %12.2f (%7.1fuS)\n",a,1.0e6/a);
+	printf("Blowfish raw ecb bytes per sec = %12.2f (%7.1fuS)\n",b,8.0e6/b);
+	printf("Blowfish cbc     bytes per sec = %12.2f (%7.1fuS)\n",c,8.0e6/c);
+	exit(0);
+#if defined(LINT) || defined(MSDOS)
+	return(0);
+#endif
+	}
+
+/* crypto/bf/bftest.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+/* This has been a quickly hacked 'ideatest.c'.  When I add tests for other
+ * RC2 modes, more of the code will be uncommented. */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "blowfish.h"
+
+char *bf_key[2]={
+	"abcdefghijklmnopqrstuvwxyz",
+	"Who is John Galt?"
+	};
+
+/* big endian */
+BF_LONG bf_plain[2][2]={
+	{0x424c4f57,0x46495348},
+	{0xfedcba98,0x76543210}
+	};
+
+BF_LONG bf_cipher[2][2]={
+	{0x324ed0fe,0xf413a203},
+	{0xcc91732b,0x8022f684}
+	};
+/************/
+
+/* Lets use the DES test vectors :-) */
+#define NUM_TESTS 34
+static unsigned char ecb_data[NUM_TESTS][8]={
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+	{0x30,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0xFE,0xDC,0xBA,0x98,0x76,0x54,0x32,0x10},
+	{0x7C,0xA1,0x10,0x45,0x4A,0x1A,0x6E,0x57},
+	{0x01,0x31,0xD9,0x61,0x9D,0xC1,0x37,0x6E},
+	{0x07,0xA1,0x13,0x3E,0x4A,0x0B,0x26,0x86},
+	{0x38,0x49,0x67,0x4C,0x26,0x02,0x31,0x9E},
+	{0x04,0xB9,0x15,0xBA,0x43,0xFE,0xB5,0xB6},
+	{0x01,0x13,0xB9,0x70,0xFD,0x34,0xF2,0xCE},
+	{0x01,0x70,0xF1,0x75,0x46,0x8F,0xB5,0xE6},
+	{0x43,0x29,0x7F,0xAD,0x38,0xE3,0x73,0xFE},
+	{0x07,0xA7,0x13,0x70,0x45,0xDA,0x2A,0x16},
+	{0x04,0x68,0x91,0x04,0xC2,0xFD,0x3B,0x2F},
+	{0x37,0xD0,0x6B,0xB5,0x16,0xCB,0x75,0x46},
+	{0x1F,0x08,0x26,0x0D,0x1A,0xC2,0x46,0x5E},
+	{0x58,0x40,0x23,0x64,0x1A,0xBA,0x61,0x76},
+	{0x02,0x58,0x16,0x16,0x46,0x29,0xB0,0x07},
+	{0x49,0x79,0x3E,0xBC,0x79,0xB3,0x25,0x8F},
+	{0x4F,0xB0,0x5E,0x15,0x15,0xAB,0x73,0xA7},
+	{0x49,0xE9,0x5D,0x6D,0x4C,0xA2,0x29,0xBF},
+	{0x01,0x83,0x10,0xDC,0x40,0x9B,0x26,0xD6},
+	{0x1C,0x58,0x7F,0x1C,0x13,0x92,0x4F,0xEF},
+	{0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01},
+	{0x1F,0x1F,0x1F,0x1F,0x0E,0x0E,0x0E,0x0E},
+	{0xE0,0xFE,0xE0,0xFE,0xF1,0xFE,0xF1,0xFE},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0xFE,0xDC,0xBA,0x98,0x76,0x54,0x32,0x10}};
+
+static unsigned char plain_data[NUM_TESTS][8]={
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+	{0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x01},
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0x01,0xA1,0xD6,0xD0,0x39,0x77,0x67,0x42},
+	{0x5C,0xD5,0x4C,0xA8,0x3D,0xEF,0x57,0xDA},
+	{0x02,0x48,0xD4,0x38,0x06,0xF6,0x71,0x72},
+	{0x51,0x45,0x4B,0x58,0x2D,0xDF,0x44,0x0A},
+	{0x42,0xFD,0x44,0x30,0x59,0x57,0x7F,0xA2},
+	{0x05,0x9B,0x5E,0x08,0x51,0xCF,0x14,0x3A},
+	{0x07,0x56,0xD8,0xE0,0x77,0x47,0x61,0xD2},
+	{0x76,0x25,0x14,0xB8,0x29,0xBF,0x48,0x6A},
+	{0x3B,0xDD,0x11,0x90,0x49,0x37,0x28,0x02},
+	{0x26,0x95,0x5F,0x68,0x35,0xAF,0x60,0x9A},
+	{0x16,0x4D,0x5E,0x40,0x4F,0x27,0x52,0x32},
+	{0x6B,0x05,0x6E,0x18,0x75,0x9F,0x5C,0xCA},
+	{0x00,0x4B,0xD6,0xEF,0x09,0x17,0x60,0x62},
+	{0x48,0x0D,0x39,0x00,0x6E,0xE7,0x62,0xF2},
+	{0x43,0x75,0x40,0xC8,0x69,0x8F,0x3C,0xFA},
+	{0x07,0x2D,0x43,0xA0,0x77,0x07,0x52,0x92},
+	{0x02,0xFE,0x55,0x77,0x81,0x17,0xF1,0x2A},
+	{0x1D,0x9D,0x5C,0x50,0x18,0xF7,0x28,0xC2},
+	{0x30,0x55,0x32,0x28,0x6D,0x6F,0x29,0x5A},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}};
+
+static unsigned char cipher_data[NUM_TESTS][8]={
+	{0x4E,0xF9,0x97,0x45,0x61,0x98,0xDD,0x78},
+	{0x51,0x86,0x6F,0xD5,0xB8,0x5E,0xCB,0x8A},
+	{0x7D,0x85,0x6F,0x9A,0x61,0x30,0x63,0xF2},
+	{0x24,0x66,0xDD,0x87,0x8B,0x96,0x3C,0x9D},
+	{0x61,0xF9,0xC3,0x80,0x22,0x81,0xB0,0x96},
+	{0x7D,0x0C,0xC6,0x30,0xAF,0xDA,0x1E,0xC7},
+	{0x4E,0xF9,0x97,0x45,0x61,0x98,0xDD,0x78},
+	{0x0A,0xCE,0xAB,0x0F,0xC6,0xA0,0xA2,0x8D},
+	{0x59,0xC6,0x82,0x45,0xEB,0x05,0x28,0x2B},
+	{0xB1,0xB8,0xCC,0x0B,0x25,0x0F,0x09,0xA0},
+	{0x17,0x30,0xE5,0x77,0x8B,0xEA,0x1D,0xA4},
+	{0xA2,0x5E,0x78,0x56,0xCF,0x26,0x51,0xEB},
+	{0x35,0x38,0x82,0xB1,0x09,0xCE,0x8F,0x1A},
+	{0x48,0xF4,0xD0,0x88,0x4C,0x37,0x99,0x18},
+	{0x43,0x21,0x93,0xB7,0x89,0x51,0xFC,0x98},
+	{0x13,0xF0,0x41,0x54,0xD6,0x9D,0x1A,0xE5},
+	{0x2E,0xED,0xDA,0x93,0xFF,0xD3,0x9C,0x79},
+	{0xD8,0x87,0xE0,0x39,0x3C,0x2D,0xA6,0xE3},
+	{0x5F,0x99,0xD0,0x4F,0x5B,0x16,0x39,0x69},
+	{0x4A,0x05,0x7A,0x3B,0x24,0xD3,0x97,0x7B},
+	{0x45,0x20,0x31,0xC1,0xE4,0xFA,0xDA,0x8E},
+	{0x75,0x55,0xAE,0x39,0xF5,0x9B,0x87,0xBD},
+	{0x53,0xC5,0x5F,0x9C,0xB4,0x9F,0xC0,0x19},
+	{0x7A,0x8E,0x7B,0xFA,0x93,0x7E,0x89,0xA3},
+	{0xCF,0x9C,0x5D,0x7A,0x49,0x86,0xAD,0xB5},
+	{0xD1,0xAB,0xB2,0x90,0x65,0x8B,0xC7,0x78},
+	{0x55,0xCB,0x37,0x74,0xD1,0x3E,0xF2,0x01},
+	{0xFA,0x34,0xEC,0x48,0x47,0xB2,0x68,0xB2},
+	{0xA7,0x90,0x79,0x51,0x08,0xEA,0x3C,0xAE},
+	{0xC3,0x9E,0x07,0x2D,0x9F,0xAC,0x63,0x1D},
+	{0x01,0x49,0x33,0xE0,0xCD,0xAF,0xF6,0xE4},
+	{0xF2,0x1E,0x9A,0x77,0xB7,0x1C,0x49,0xBC},
+	{0x24,0x59,0x46,0x88,0x57,0x54,0x36,0x9A},
+	{0x6B,0x5C,0x5A,0x9C,0x5D,0x9E,0x0A,0x5A},
+	};
+
+static unsigned char cbc_key [16]={
+	0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
+	0xf0,0xe1,0xd2,0xc3,0xb4,0xa5,0x96,0x87};
+static unsigned char cbc_iv [8]={0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10};
+static char cbc_data[40]="7654321 Now is the time for ";
+static unsigned char cbc_ok[32]={
+	0x6B,0x77,0xB4,0xD6,0x30,0x06,0xDE,0xE6,
+	0x05,0xB1,0x56,0xE2,0x74,0x03,0x97,0x93,
+	0x58,0xDE,0xB9,0xE7,0x15,0x46,0x16,0xD9,
+	0x59,0xF1,0x65,0x2B,0xD5,0xFF,0x92,0xCC};
+
+static unsigned char cfb64_ok[]={
+	0xE7,0x32,0x14,0xA2,0x82,0x21,0x39,0xCA,
+	0xF2,0x6E,0xCF,0x6D,0x2E,0xB9,0xE7,0x6E,
+	0x3D,0xA3,0xDE,0x04,0xD1,0x51,0x72,0x00,
+	0x51,0x9D,0x57,0xA6,0xC3};
+
+static unsigned char ofb64_ok[]={
+	0xE7,0x32,0x14,0xA2,0x82,0x21,0x39,0xCA,
+	0x62,0xB3,0x43,0xCC,0x5B,0x65,0x58,0x73,
+	0x10,0xDD,0x90,0x8D,0x0C,0x24,0x1B,0x22,
+	0x63,0xC2,0xCF,0x80,0xDA};
+
+#define KEY_TEST_NUM	25
+unsigned char key_test[KEY_TEST_NUM]={
+	0xf0,0xe1,0xd2,0xc3,0xb4,0xa5,0x96,0x87,
+	0x78,0x69,0x5a,0x4b,0x3c,0x2d,0x1e,0x0f,
+	0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
+	0x88};
+
+unsigned char key_data[8]=
+	{0xFE,0xDC,0xBA,0x98,0x76,0x54,0x32,0x10};
+
+unsigned char key_out[KEY_TEST_NUM][8]={
+	{0xF9,0xAD,0x59,0x7C,0x49,0xDB,0x00,0x5E},
+	{0xE9,0x1D,0x21,0xC1,0xD9,0x61,0xA6,0xD6},
+	{0xE9,0xC2,0xB7,0x0A,0x1B,0xC6,0x5C,0xF3},
+	{0xBE,0x1E,0x63,0x94,0x08,0x64,0x0F,0x05},
+	{0xB3,0x9E,0x44,0x48,0x1B,0xDB,0x1E,0x6E},
+	{0x94,0x57,0xAA,0x83,0xB1,0x92,0x8C,0x0D},
+	{0x8B,0xB7,0x70,0x32,0xF9,0x60,0x62,0x9D},
+	{0xE8,0x7A,0x24,0x4E,0x2C,0xC8,0x5E,0x82},
+	{0x15,0x75,0x0E,0x7A,0x4F,0x4E,0xC5,0x77},
+	{0x12,0x2B,0xA7,0x0B,0x3A,0xB6,0x4A,0xE0},
+	{0x3A,0x83,0x3C,0x9A,0xFF,0xC5,0x37,0xF6},
+	{0x94,0x09,0xDA,0x87,0xA9,0x0F,0x6B,0xF2},
+	{0x88,0x4F,0x80,0x62,0x50,0x60,0xB8,0xB4},
+	{0x1F,0x85,0x03,0x1C,0x19,0xE1,0x19,0x68},
+	{0x79,0xD9,0x37,0x3A,0x71,0x4C,0xA3,0x4F},
+	{0x93,0x14,0x28,0x87,0xEE,0x3B,0xE1,0x5C},
+	{0x03,0x42,0x9E,0x83,0x8C,0xE2,0xD1,0x4B},
+	{0xA4,0x29,0x9E,0x27,0x46,0x9F,0xF6,0x7B},
+	{0xAF,0xD5,0xAE,0xD1,0xC1,0xBC,0x96,0xA8},
+	{0x10,0x85,0x1C,0x0E,0x38,0x58,0xDA,0x9F},
+	{0xE6,0xF5,0x1E,0xD7,0x9B,0x9D,0xB2,0x1F},
+	{0x64,0xA6,0xE1,0x4A,0xFD,0x36,0xB4,0x6F},
+	{0x80,0xC7,0xD7,0xD4,0x5A,0x54,0x79,0xAD},
+	{0x05,0x04,0x4B,0x62,0xFA,0x52,0xD0,0x80},
+	};
+
+
+int print_test_data()
+	{
+	int i,j;
+
+	printf("ecb test data\n");
+	printf("key bytes\t\tclear bytes\t\tcipher bytes\n");
+	for (i=0; i<NUM_TESTS; i++)
+		{
+		for (j=0; j<8; j++)
+			printf("%02X",ecb_data[i][j]);
+		printf("\t");
+		for (j=0; j<8; j++)
+			printf("%02X",plain_data[i][j]);
+		printf("\t");
+		for (j=0; j<8; j++)
+			printf("%02X",cipher_data[i][j]);
+		printf("\n");
+		}
+
+	printf("set_key test data\n");
+	printf("data[8]= ");
+	for (j=0; j<8; j++)
+		printf("%02X",key_data[j]);
+	printf("\n");
+	for (i=0; i<KEY_TEST_NUM-1; i++)
+		{
+		printf("c=");
+		for (j=0; j<8; j++)
+			printf("%02X",key_out[i][j]);
+		printf(" k[%2d]=",i+1);
+		for (j=0; j<i+1; j++)
+			printf("%02X",key_test[j]);
+		printf("\n");
+		}
+
+	printf("\nchaining mode test data\n");
+	printf("key[16]   = ");
+	for (j=0; j<16; j++)
+		printf("%02X",cbc_key[j]);
+	printf("\niv[8]     = ");
+	for (j=0; j<8; j++)
+		printf("%02X",cbc_iv[j]);
+	printf("\ndata[%d]  = '%s'",strlen(cbc_data)+1,cbc_data);
+	printf("\ndata[%d]  = ",strlen(cbc_data)+1);
+	for (j=0; j<strlen(cbc_data)+1; j++)
+		printf("%02X",cbc_data[j]);
+	printf("\n");
+	printf("cbc cipher text\n");
+	printf("cipher[%d]= ",32);
+	for (j=0; j<32+1; j++)
+		printf("%02X",cbc_ok[j]);
+	printf("\n");
+
+	printf("cfb64 cipher text\n");
+	printf("cipher[%d]= ",strlen(cbc_data)+1);
+	for (j=0; j<strlen(cbc_data)+1; j++)
+		printf("%02X",cfb64_ok[j]);
+	printf("\n");
+
+	printf("ofb64 cipher text\n");
+	printf("cipher[%d]= ",strlen(cbc_data)+1);
+	for (j=0; j<strlen(cbc_data)+1; j++)
+		printf("%02X",ofb64_ok[j]);
+	printf("\n");
+	return(0);
+	}
+
+int main(argc,argv)
+int argc;
+char *argv[];
+	{
+	int ret;
+
+	if (argc > 1)
+		ret=print_test_data();
+	else
+		ret=test();
+
+	exit(ret);
+	}
+
+int test()
+	{
+	unsigned char cbc_in[40],cbc_out[40],iv[8];
+	int i,n,err=0;
+	BF_KEY key;
+	BF_LONG data[2]; 
+	unsigned char out[8]; 
+	unsigned long len;
+
+	printf("testing blowfish in raw ecb mode\n");
+	for (n=0; n<2; n++)
+		{
+		BF_set_key(&key,strlen(bf_key[n]),(unsigned char *)bf_key[n]);
+	printf("Set key.\n");
+		data[0]=bf_plain[n][0];
+		data[1]=bf_plain[n][1];
+		BF_encrypt(data,&key,BF_ENCRYPT);
+		printf("Encrypted.\n");
+		if (memcmp(&(bf_cipher[n][0]),&(data[0]),8) != 0)
+			{
+			printf("BF_encrypt error encrypting\n");
+			printf("got     :");
+			for (i=0; i<2; i++)
+				printf("%08lX ",data[i]);
+			printf("\n");
+			printf("expected:");
+			for (i=0; i<2; i++)
+				printf("%08lX ",bf_cipher[n][i]);
+			err=1;
+			printf("\n");
+			}
+
+		BF_encrypt(&(data[0]),&key,BF_DECRYPT);
+		printf("decrypted.\n");
+		if (memcmp(&(bf_plain[n][0]),&(data[0]),8) != 0)
+			{
+			printf("BF_encrypt error decrypting\n");
+			printf("got     :");
+			for (i=0; i<2; i++)
+				printf("%08lX ",data[i]);
+			printf("\n");
+			printf("expected:");
+			for (i=0; i<2; i++)
+				printf("%08lX ",bf_plain[n][i]);
+			printf("\n");
+			err=1;
+			}
+		}
+
+	printf("testing blowfish in ecb mode\n");
+
+	for (n=0; n<NUM_TESTS; n++)
+		{
+		BF_set_key(&key,8,ecb_data[n]);
+
+		BF_ecb_encrypt(&(plain_data[n][0]),out,&key,BF_ENCRYPT);
+		if (memcmp(&(cipher_data[n][0]),out,8) != 0)
+			{
+			printf("BF_ecb_encrypt blowfish error encrypting\n");
+			printf("got     :");
+			for (i=0; i<8; i++)
+				printf("%02X ",out[i]);
+			printf("\n");
+			printf("expected:");
+			for (i=0; i<8; i++)
+				printf("%02X ",cipher_data[n][i]);
+			err=1;
+			printf("\n");
+			}
+
+		BF_ecb_encrypt(out,out,&key,BF_DECRYPT);
+		if (memcmp(&(plain_data[n][0]),out,8) != 0)
+			{
+			printf("BF_ecb_encrypt error decrypting\n");
+			printf("got     :");
+			for (i=0; i<8; i++)
+				printf("%02X ",out[i]);
+			printf("\n");
+			printf("expected:");
+			for (i=0; i<8; i++)
+				printf("%02X ",plain_data[n][i]);
+			printf("\n");
+			err=1;
+			}
+		}
+
+	printf("testing blowfish set_key\n");
+	for (n=1; n<KEY_TEST_NUM; n++)
+		{
+		BF_set_key(&key,n,key_test);
+		BF_ecb_encrypt(key_data,out,&key,BF_ENCRYPT);
+		if (memcmp(out,&(key_out[n-1][0]),8) != 0)
+			{
+			printf("blowfish setkey error\n");
+			err=1;
+			}
+		}
+
+	printf("testing blowfish in cbc mode\n");
+	len=strlen(cbc_data)+1;
+
+	BF_set_key(&key,16,cbc_key);
+	memset(cbc_in,0,40);
+	memset(cbc_out,0,40);
+	memcpy(iv,cbc_iv,8);
+	BF_cbc_encrypt((unsigned char *)cbc_data,cbc_out,len,
+		&key,iv,BF_ENCRYPT);
+	if (memcmp(cbc_out,cbc_ok,32) != 0)
+		{
+		err=1;
+		printf("BF_cbc_encrypt encrypt error\n");
+		for (i=0; i<32; i++) printf("0x%02X,",cbc_out[i]);
+		}
+	memcpy(iv,cbc_iv,8);
+	BF_cbc_encrypt(cbc_out,cbc_in,len,
+		&key,iv,BF_DECRYPT);
+	if (memcmp(cbc_in,cbc_data,strlen(cbc_data)+1) != 0)
+		{
+		printf("BF_cbc_encrypt decrypt error\n");
+		err=1;
+		}
+
+	printf("testing blowfish in cfb64 mode\n");
+
+	BF_set_key(&key,16,cbc_key);
+	memset(cbc_in,0,40);
+	memset(cbc_out,0,40);
+	memcpy(iv,cbc_iv,8);
+	n=0;
+	BF_cfb64_encrypt((unsigned char *)cbc_data,cbc_out,(long)13,
+		&key,iv,&n,BF_ENCRYPT);
+	BF_cfb64_encrypt((unsigned char *)&(cbc_data[13]),&(cbc_out[13]),len-13,
+		&key,iv,&n,BF_ENCRYPT);
+	if (memcmp(cbc_out,cfb64_ok,(int)len) != 0)
+		{
+		err=1;
+		printf("BF_cfb64_encrypt encrypt error\n");
+		for (i=0; i<(int)len; i++) printf("0x%02X,",cbc_out[i]);
+		}
+	n=0;
+	memcpy(iv,cbc_iv,8);
+	BF_cfb64_encrypt(cbc_out,cbc_in,17,
+		&key,iv,&n,BF_DECRYPT);
+	BF_cfb64_encrypt(&(cbc_out[17]),&(cbc_in[17]),len-17,
+		&key,iv,&n,BF_DECRYPT);
+	if (memcmp(cbc_in,cbc_data,(int)len) != 0)
+		{
+		printf("BF_cfb64_encrypt decrypt error\n");
+		err=1;
+		}
+
+	printf("testing blowfish in ofb64\n");
+
+	BF_set_key(&key,16,cbc_key);
+	memset(cbc_in,0,40);
+	memset(cbc_out,0,40);
+	memcpy(iv,cbc_iv,8);
+	n=0;
+	BF_ofb64_encrypt((unsigned char *)cbc_data,cbc_out,(long)13,&key,iv,&n);
+	BF_ofb64_encrypt((unsigned char *)&(cbc_data[13]),
+		&(cbc_out[13]),len-13,&key,iv,&n);
+	if (memcmp(cbc_out,ofb64_ok,(int)len) != 0)
+		{
+		err=1;
+		printf("BF_ofb64_encrypt encrypt error\n");
+		for (i=0; i<(int)len; i++) printf("0x%02X,",cbc_out[i]);
+		}
+	n=0;
+	memcpy(iv,cbc_iv,8);
+	BF_ofb64_encrypt(cbc_out,cbc_in,17,&key,iv,&n);
+	BF_ofb64_encrypt(&(cbc_out[17]),&(cbc_in[17]),len-17,&key,iv,&n);
+	if (memcmp(cbc_in,cbc_data,(int)len) != 0)
+		{
+		printf("BF_ofb64_encrypt decrypt error\n");
+		err=1;
+		}
+
+	return(err);
+	}
+
+/* crypto/bf/bf_cbc.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include "blowfish.h"
+#include "bf_locl.h"
+
+void BF_cbc_encrypt(in, out, length, ks, iv, encrypt)
+unsigned char *in;
+unsigned char *out;
+long length;
+BF_KEY *ks;
+unsigned char *iv;
+int encrypt;
+	{
+	register BF_LONG tin0,tin1;
+	register BF_LONG tout0,tout1,xor0,xor1;
+	register long l=length;
+	BF_LONG tin[2];
+
+	if (encrypt)
+		{
+		n2l(iv,tout0);
+		n2l(iv,tout1);
+		iv-=8;
+		for (l-=8; l>=0; l-=8)
+			{
+			n2l(in,tin0);
+			n2l(in,tin1);
+			tin0^=tout0;
+			tin1^=tout1;
+			tin[0]=tin0;
+			tin[1]=tin1;
+			BF_encrypt(tin,ks,BF_ENCRYPT);
+			tout0=tin[0];
+			tout1=tin[1];
+			l2n(tout0,out);
+			l2n(tout1,out);
+			}
+		if (l != -8)
+			{
+			n2ln(in,tin0,tin1,l+8);
+			tin0^=tout0;
+			tin1^=tout1;
+			tin[0]=tin0;
+			tin[1]=tin1;
+			BF_encrypt(tin,ks,BF_ENCRYPT);
+			tout0=tin[0];
+			tout1=tin[1];
+			l2n(tout0,out);
+			l2n(tout1,out);
+			}
+		l2n(tout0,iv);
+		l2n(tout1,iv);
+		}
+	else
+		{
+		n2l(iv,xor0);
+		n2l(iv,xor1);
+		iv-=8;
+		for (l-=8; l>=0; l-=8)
+			{
+			n2l(in,tin0);
+			n2l(in,tin1);
+			tin[0]=tin0;
+			tin[1]=tin1;
+			BF_encrypt(tin,ks,BF_DECRYPT);
+			tout0=tin[0]^xor0;
+			tout1=tin[1]^xor1;
+			l2n(tout0,out);
+			l2n(tout1,out);
+			xor0=tin0;
+			xor1=tin1;
+			}
+		if (l != -8)
+			{
+			n2l(in,tin0);
+			n2l(in,tin1);
+			tin[0]=tin0;
+			tin[1]=tin1;
+			BF_encrypt(tin,ks,BF_DECRYPT);
+			tout0=tin[0]^xor0;
+			tout1=tin[1]^xor1;
+			l2nn(tout0,tout1,out,l+8);
+			xor0=tin0;
+			xor1=tin1;
+			}
+		l2n(xor0,iv);
+		l2n(xor1,iv);
+		}
+	tin0=tin1=tout0=tout1=xor0=xor1=0;
+	tin[0]=tin[1]=0;
+	}
+
+
+/* crypto/bf/bf_cfb64.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include "blowfish.h"
+#include "bf_locl.h"
+
+/* The input and output encrypted as though 64bit cfb mode is being
+ * used.  The extra state information to record how much of the
+ * 64bit block we have used is contained in *num;
+ */
+
+void BF_cfb64_encrypt(in, out, length, schedule, ivec, num, encrypt)
+unsigned char *in;
+unsigned char *out;
+long length;
+BF_KEY *schedule;
+unsigned char *ivec;
+int *num;
+int encrypt;
+	{
+	register BF_LONG v0,v1,t;
+	register int n= *num;
+	register long l=length;
+	BF_LONG ti[2];
+	unsigned char *iv,c,cc;
+
+	iv=(unsigned char *)ivec;
+	if (encrypt)
+		{
+		while (l--)
+			{
+			if (n == 0)
+				{
+				n2l(iv,v0); ti[0]=v0;
+				n2l(iv,v1); ti[1]=v1;
+				BF_encrypt((unsigned long *)ti,schedule,BF_ENCRYPT);
+				iv=(unsigned char *)ivec;
+				t=ti[0]; l2n(t,iv);
+				t=ti[1]; l2n(t,iv);
+				iv=(unsigned char *)ivec;
+				}
+			c= *(in++)^iv[n];
+			*(out++)=c;
+			iv[n]=c;
+			n=(n+1)&0x07;
+			}
+		}
+	else
+		{
+		while (l--)
+			{
+			if (n == 0)
+				{
+				n2l(iv,v0); ti[0]=v0;
+				n2l(iv,v1); ti[1]=v1;
+				BF_encrypt((unsigned long *)ti,schedule,BF_ENCRYPT);
+				iv=(unsigned char *)ivec;
+				t=ti[0]; l2n(t,iv);
+				t=ti[1]; l2n(t,iv);
+				iv=(unsigned char *)ivec;
+				}
+			cc= *(in++);
+			c=iv[n];
+			iv[n]=cc;
+			*(out++)=c^cc;
+			n=(n+1)&0x07;
+			}
+		}
+	v0=v1=ti[0]=ti[1]=t=c=cc=0;
+	*num=n;
+	}
+
+
+/* crypto/bf/bf_ecb.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include "blowfish.h"
+#include "bf_locl.h"
+
+/* Blowfish as implemented from 'Blowfish: Springer-Verlag paper'
+ * (From LECTURE NOTES IN COIMPUTER SCIENCE 809, FAST SOFTWARE ENCRYPTION,
+ * CAMBRIDGE SECURITY WORKSHOP, CAMBRIDGE, U.K., DECEMBER 9-11, 1993)
+ */
+
+char *BF_version="BlowFish part of SSLeay 0.7.0 30-Jan-1997";
+
+char *BF_options()
+	{
+#ifdef BF_PTR
+	return("blowfish(ptr)");
+#elif defined(BF_PTR2)
+	return("blowfish(ptr2)");
+#else
+	return("blowfish(idx)");
+#endif
+	}
+
+void BF_ecb_encrypt(in, out, ks, encrypt)
+unsigned char *in;
+unsigned char *out;
+BF_KEY *ks;
+int encrypt;
+	{
+	BF_LONG l,d[2];
+
+	n2l(in,l); d[0]=l;
+	n2l(in,l); d[1]=l;
+	BF_encrypt(d,ks,encrypt);
+	l=d[0]; l2n(l,out);
+	l=d[1]; l2n(l,out);
+	l=d[0]=d[1]=0;
+	}
+
+
+/* crypto/bf/bf_enc.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include "blowfish.h"
+#include "bf_locl.h"
+
+/* Blowfish as implemented from 'Blowfish: Springer-Verlag paper'
+ * (From LECTURE NOTES IN COIMPUTER SCIENCE 809, FAST SOFTWARE ENCRYPTION,
+ * CAMBRIDGE SECURITY WORKSHOP, CAMBRIDGE, U.K., DECEMBER 9-11, 1993)
+ */
+
+#if (BF_ROUNDS != 16) && (BF_ROUNDS != 20)
+If you set BF_ROUNDS to some value other than 16 or 20, you will have
+to modify the code.
+#endif
+
+void BF_encrypt(data,key,encrypt)
+BF_LONG *data;
+BF_KEY *key;
+int encrypt;
+	{
+	register BF_LONG l,r,*p,*s;
+
+	p=key->P;
+	s= &(key->S[0]);
+	l=data[0];
+	r=data[1];
+
+	if (encrypt)
+		{
+		l^=p[0];
+		BF_ENC(r,l,s,p[ 1]);
+		BF_ENC(l,r,s,p[ 2]);
+		BF_ENC(r,l,s,p[ 3]);
+		BF_ENC(l,r,s,p[ 4]);
+		BF_ENC(r,l,s,p[ 5]);
+		BF_ENC(l,r,s,p[ 6]);
+		BF_ENC(r,l,s,p[ 7]);
+		BF_ENC(l,r,s,p[ 8]);
+		BF_ENC(r,l,s,p[ 9]);
+		BF_ENC(l,r,s,p[10]);
+		BF_ENC(r,l,s,p[11]);
+		BF_ENC(l,r,s,p[12]);
+		BF_ENC(r,l,s,p[13]);
+		BF_ENC(l,r,s,p[14]);
+		BF_ENC(r,l,s,p[15]);
+		BF_ENC(l,r,s,p[16]);
+#if BF_ROUNDS == 20
+		BF_ENC(r,l,s,p[17]);
+		BF_ENC(l,r,s,p[18]);
+		BF_ENC(r,l,s,p[19]);
+		BF_ENC(l,r,s,p[20]);
+#endif
+		r^=p[BF_ROUNDS+1];
+		}
+	else
+		{
+		l^=p[BF_ROUNDS+1];
+#if BF_ROUNDS == 20
+		BF_ENC(r,l,s,p[20]);
+		BF_ENC(l,r,s,p[19]);
+		BF_ENC(r,l,s,p[18]);
+		BF_ENC(l,r,s,p[17]);
+#endif
+		BF_ENC(r,l,s,p[16]);
+		BF_ENC(l,r,s,p[15]);
+		BF_ENC(r,l,s,p[14]);
+		BF_ENC(l,r,s,p[13]);
+		BF_ENC(r,l,s,p[12]);
+		BF_ENC(l,r,s,p[11]);
+		BF_ENC(r,l,s,p[10]);
+		BF_ENC(l,r,s,p[ 9]);
+		BF_ENC(r,l,s,p[ 8]);
+		BF_ENC(l,r,s,p[ 7]);
+		BF_ENC(r,l,s,p[ 6]);
+		BF_ENC(l,r,s,p[ 5]);
+		BF_ENC(r,l,s,p[ 4]);
+		BF_ENC(l,r,s,p[ 3]);
+		BF_ENC(r,l,s,p[ 2]);
+		BF_ENC(l,r,s,p[ 1]);
+		r^=p[0];
+		}
+	data[1]=l&0xffffffff;
+	data[0]=r&0xffffffff;
+	}
+
+int
+main(int argc, char *argv[]) {
+
+
+  
+  exit(1);
+}
+
+/* crypto/bf/bf_ofb64.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include "blowfish.h"
+#include "bf_locl.h"
+
+/* The input and output encrypted as though 64bit ofb mode is being
+ * used.  The extra state information to record how much of the
+ * 64bit block we have used is contained in *num;
+ */
+void BF_ofb64_encrypt(in, out, length, schedule, ivec, num)
+unsigned char *in;
+unsigned char *out;
+long length;
+BF_KEY *schedule;
+unsigned char *ivec;
+int *num;
+	{
+	register unsigned long v0,v1,t;
+	register int n= *num;
+	register long l=length;
+	unsigned char d[8];
+	register char *dp;
+	unsigned long ti[2];
+	unsigned char *iv;
+	int save=0;
+
+	iv=(unsigned char *)ivec;
+	n2l(iv,v0);
+	n2l(iv,v1);
+	ti[0]=v0;
+	ti[1]=v1;
+	dp=(char *)d;
+	l2n(v0,dp);
+	l2n(v1,dp);
+	while (l--)
+		{
+		if (n == 0)
+			{
+			BF_encrypt((unsigned long *)ti,schedule,BF_ENCRYPT);
+			dp=(char *)d;
+			t=ti[0]; l2n(t,dp);
+			t=ti[1]; l2n(t,dp);
+			save++;
+			}
+		*(out++)= *(in++)^d[n];
+		n=(n+1)&0x07;
+		}
+	if (save)
+		{
+		v0=ti[0];
+		v1=ti[1];
+		iv=(unsigned char *)ivec;
+		l2n(v0,iv);
+		l2n(v1,iv);
+		}
+	t=v0=v1=ti[0]=ti[1]=0;
+	*num=n;
+	}
+
+
+/* crypto/bf/bf_skey.c */
+/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@mincom.oz.au).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@mincom.oz.au).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@mincom.oz.au)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include "blowfish.h"
+#include "bf_locl.h"
+#include "bf_pi.h"
+
+void BF_set_key(key,len,data)
+BF_KEY *key;
+int len;
+unsigned char *data;
+	{
+	int i;
+	BF_LONG *p,ri,in[2];
+	unsigned char *d,*end;
+
+
+	memcpy((char *)key,(char *)&bf_init,sizeof(BF_KEY));
+	p=key->P;
+
+	if (len > ((BF_ROUNDS+2)*4)) len=(BF_ROUNDS+2)*4;
+
+	d=data;
+	end= &(data[len]);
+	for (i=0; i<(BF_ROUNDS+2); i++)
+		{
+		ri= *(d++);
+		if (d >= end) d=data;
+
+		ri<<=8;
+		ri|= *(d++);
+		if (d >= end) d=data;
+
+		ri<<=8;
+		ri|= *(d++);
+		if (d >= end) d=data;
+
+		ri<<=8;
+		ri|= *(d++);
+		if (d >= end) d=data;
+
+		p[i]^=ri;
+		}
+
+	in[0]=0L;
+	in[1]=0L;
+	for (i=0; i<(BF_ROUNDS+2); i+=2)
+		{
+		BF_encrypt(in,key,BF_ENCRYPT);
+		p[i  ]=in[0];
+		p[i+1]=in[1];
+		}
+
+	p=key->S;
+	for (i=0; i<4*256; i+=2)
+		{
+		BF_encrypt(in,key,BF_ENCRYPT);
+		p[i  ]=in[0];
+		p[i+1]=in[1];
+		}
+	}
+
+
+#include <stdio.h>
+#include "blowfish.h"
+
+int
+main(int argc, char *argv[])
+{
+	BF_KEY key;
+	unsigned char ukey[8];
+	unsigned char indata[40],outdata[40],ivec[8];
+	int num;
+	int by=0,i=0;
+	int encordec=-1;
+	char *cp,ch;
+	FILE *fp,*fp2;
+
+if (argc<3)
+{
+	printf("Usage: blowfish {e|d} <intput> <output> key\n");
+	exit(-1);
+}
+
+if (*argv[1]=='e' || *argv[1]=='E')
+	encordec = 1;
+else if (*argv[1]=='d' || *argv[1]=='D')
+	encordec = 0;
+else
+{
+	printf("Usage: blowfish {e|d} <intput> <output> key\n");
+	exit(-1);
+}
+					
+
+/* Read the key */
+cp = argv[4];
+while(i < 64 && *cp)    /* the maximum key length is 32 bytes and   */
+{                       /* hence at most 64 hexadecimal digits      */
+	ch = toupper(*cp++);            /* process a hexadecimal digit  */
+	if(ch >= '0' && ch <= '9')
+		by = (by << 4) + ch - '0';
+	else if(ch >= 'A' && ch <= 'F')
+		by = (by << 4) + ch - 'A' + 10;
+	else                            /* error if not hexadecimal     */
+	{
+		printf("key must be in hexadecimal notation\n");
+		exit(-1);
+	}
+
+	/* store a key byte for each pair of hexadecimal digits         */
+	if(i++ & 1)
+		ukey[i / 2 - 1] = by & 0xff;
+}
+
+BF_set_key(&key,8,ukey);
+
+if(*cp)
+{
+	printf("Bad key value.\n");
+	exit(-1);
+}
+
+/* open the input and output files */
+if ((fp = fopen(argv[2],"r"))==0)
+{
+	printf("Usage: blowfish {e|d} <intput> <output> key\n");
+	exit(-1);
+};
+if ((fp2 = fopen(argv[3],"w"))==0)
+{
+	printf("Usage: blowfish {e|d} <intput> <output> key\n");
+	exit(-1);
+};
+
+i=0;
+while(!feof(fp))
+{
+	int j;
+	while(!feof(fp) && i<40)
+		indata[i++]=getc(fp);
+
+	BF_cfb64_encrypt(indata,outdata,i,&key,ivec,&num,encordec);
+
+	for(j=0;j<i;j++)
+	{
+		/*printf("%c",outdata[j]);*/
+		fputc(outdata[j],fp2);
+	}
+	i=0;
+}
+
+close(fp);
+close(fp2);
+
+exit(1);
+}
+
+
+
