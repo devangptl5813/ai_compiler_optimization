@@ -2,40 +2,40 @@
 ML COMPILER OPTIMIZATION LEVEL PREDICTOR - ACCURACY REPORT
 ============================================================
 
-Dataset size: 641 programs (Train=512, Test=129)
+Dataset size: 651 programs (Train=520, Test=131)
 
 --- RandomForest Classifier ---
-Accuracy: 17.83%
+Accuracy: 22.14%
 Classification Report:
               precision    recall  f1-score   support
 
-          O0       0.11      0.08      0.09        25
-          O1       0.16      0.23      0.19        22
-          O2       0.27      0.26      0.26        27
-          O3       0.23      0.21      0.22        29
-          Os       0.12      0.12      0.12        26
+          O0       0.24      0.24      0.24        25
+          O1       0.16      0.22      0.18        23
+          O2       0.29      0.30      0.29        27
+          O3       0.29      0.20      0.24        30
+          Os       0.16      0.15      0.16        26
 
-    accuracy                           0.18       129
-   macro avg       0.18      0.18      0.17       129
-weighted avg       0.18      0.18      0.18       129
+    accuracy                           0.22       131
+   macro avg       0.23      0.22      0.22       131
+weighted avg       0.23      0.22      0.22       131
 
 --------------------------------------------------
 
---- GradientBoosting Classifier ---
-Accuracy: 25.58%
+--- XGBoost Classifier ---
+Accuracy: 24.43%
 Classification Report:
               precision    recall  f1-score   support
 
-          O0       0.15      0.12      0.13        25
-          O1       0.27      0.27      0.27        22
-          O2       0.23      0.22      0.23        27
-          O3       0.34      0.41      0.38        29
-          Os       0.23      0.23      0.23        26
+          O0       0.25      0.16      0.20        25
+          O1       0.19      0.22      0.20        23
+          O2       0.26      0.22      0.24        27
+          O3       0.34      0.40      0.37        30
+          Os       0.17      0.19      0.18        26
 
-    accuracy                           0.26       129
-   macro avg       0.25      0.25      0.25       129
-weighted avg       0.25      0.26      0.25       129
+    accuracy                           0.24       131
+   macro avg       0.24      0.24      0.24       131
+weighted avg       0.25      0.24      0.24       131
 
 --------------------------------------------------
 
-BEST MODEL SAVED: GradientBoosting (25.58% Test Accuracy)
+BEST MODEL SAVED: XGBoost (24.43% Test Accuracy)

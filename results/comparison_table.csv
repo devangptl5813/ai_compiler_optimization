@@ -1,6 +1,6 @@
 Strategy,Avg Execution Time (s),Avg Binary Size (bytes),% Programs Matched Oracle
-Always -O0,0.08032,42091,19.38
-Always -O2,0.0524,41875,20.93
-Always -O3,0.05199,42071,22.48
-ML-Predicted,0.05198,41973,25.58
-Oracle (best possible),0.04206,42003,100.0
+Always -O0,0.08018,41924,19.08
+Always -O2,0.05153,41702,20.61
+Always -O3,0.05106,41886,22.9
+ML-Predicted,0.05013,41779,24.43
+Oracle (best possible),0.04164,41823,100.0

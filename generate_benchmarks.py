@@ -1084,6 +1084,679 @@ int main() {
 }
 """
 
+programs["gemm_blocked.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define N 128
+#define BLOCK_SIZE 32
+
+void gemm_blocked(double *A, double *B, double *C, int n) {
+    int ii, jj, kk, i, j, k;
+    for (ii = 0; ii < n; ii += BLOCK_SIZE) {
+        for (jj = 0; jj < n; jj += BLOCK_SIZE) {
+            for (kk = 0; kk < n; kk += BLOCK_SIZE) {
+                for (i = ii; i < ii + BLOCK_SIZE && i < n; i++) {
+                    for (k = kk; k < kk + BLOCK_SIZE && k < n; k++) {
+                        double a_ik = A[i * n + k];
+                        for (j = jj; j < jj + BLOCK_SIZE && j < n; j++) {
+                            C[i * n + j] += a_ik * B[k * n + j];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    double *A = (double *)malloc(N * N * sizeof(double));
+    double *B = (double *)malloc(N * N * sizeof(double));
+    double *C = (double *)calloc(N * N, sizeof(double));
+    int i;
+    for (i = 0; i < N * N; i++) {
+        A[i] = (double)(i % 100) * 0.05;
+        B[i] = (double)((i * 7) % 100) * 0.03;
+    }
+    gemm_blocked(A, B, C, N);
+    double checksum = 0.0;
+    for (i = 0; i < N * N; i += 17) {
+        checksum += C[i];
+    }
+    printf("GEMM Blocked complete: checksum=%.4f\n", checksum);
+    free(A); free(B); free(C);
+    return 0;
+}
+"""
+
+programs["sobel_filter.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define W 128
+#define H 128
+
+void sobel_filter(const unsigned char *in, unsigned char *out, int w, int h) {
+    int x, y;
+    int gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+    int gy[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+    for (y = 1; y < h - 1; y++) {
+        for (x = 1; x < w - 1; x++) {
+            int sum_x = 0;
+            int sum_y = 0;
+            int ky, kx;
+            for (ky = -1; ky <= 1; ky++) {
+                for (kx = -1; kx <= 1; kx++) {
+                    int val = in[(y + ky) * w + (x + kx)];
+                    sum_x += val * gx[ky + 1][kx + 1];
+                    sum_y += val * gy[ky + 1][kx + 1];
+                }
+            }
+            int mag = (int)sqrt((double)(sum_x * sum_x + sum_y * sum_y));
+            out[y * w + x] = (unsigned char)(mag > 255 ? 255 : mag);
+        }
+    }
+}
+
+int main() {
+    unsigned char *in = (unsigned char *)malloc(W * H);
+    unsigned char *out = (unsigned char *)malloc(W * H);
+    int i, iter;
+    for (i = 0; i < W * H; i++) {
+        in[i] = (unsigned char)((i * 13 + 7) & 0xFF);
+    }
+    for (iter = 0; iter < 4; iter++) {
+        sobel_filter(in, out, W, H);
+    }
+    long sum = 0;
+    for (i = 0; i < W * H; i += 19) {
+        sum += out[i];
+    }
+    printf("Sobel filter complete: sum=%ld\n", sum);
+    free(in); free(out);
+    return 0;
+}
+"""
+
+programs["radix_sort.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define SIZE 20000
+
+void radix_sort(unsigned int *arr, int n) {
+    unsigned int *output = (unsigned int *)malloc(n * sizeof(unsigned int));
+    int shift;
+    for (shift = 0; shift < 32; shift += 8) {
+        int count[256] = {0};
+        int i;
+        for (i = 0; i < n; i++) {
+            count[(arr[i] >> shift) & 0xFF]++;
+        }
+        for (i = 1; i < 256; i++) {
+            count[i] += count[i - 1];
+        }
+        for (i = n - 1; i >= 0; i--) {
+            unsigned char byte = (arr[i] >> shift) & 0xFF;
+            output[--count[byte]] = arr[i];
+        }
+        for (i = 0; i < n; i++) {
+            arr[i] = output[i];
+        }
+    }
+    free(output);
+}
+
+int main() {
+    unsigned int *arr = (unsigned int *)malloc(SIZE * sizeof(unsigned int));
+    int i, iter;
+    unsigned int checksum = 0;
+    for (iter = 0; iter < 2; iter++) {
+        unsigned int seed = 1234567 + iter * 99;
+        for (i = 0; i < SIZE; i++) {
+            seed = seed * 1664525u + 1013904223u;
+            arr[i] = seed;
+        }
+        radix_sort(arr, SIZE);
+        checksum += arr[0] + arr[SIZE / 2] + arr[SIZE - 1];
+    }
+    printf("Radix sort complete: checksum=%u\n", checksum);
+    free(arr);
+    return 0;
+}
+"""
+
+programs["avl_tree_ops.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct AVLNode {
+    int key;
+    int height;
+    struct AVLNode *left;
+    struct AVLNode *right;
+} AVLNode;
+
+int max_val(int a, int b) { return (a > b) ? a : b; }
+int get_height(AVLNode *n) { return n ? n->height : 0; }
+int get_balance(AVLNode *n) { return n ? get_height(n->left) - get_height(n->right) : 0; }
+
+AVLNode* create_node(int key) {
+    AVLNode *node = (AVLNode *)malloc(sizeof(AVLNode));
+    node->key = key;
+    node->height = 1;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+AVLNode* right_rotate(AVLNode *y) {
+    if (!y || !y->left) return y;
+    AVLNode *x = y->left;
+    AVLNode *t2 = x->right;
+    x->right = y;
+    y->left = t2;
+    y->height = max_val(get_height(y->left), get_height(y->right)) + 1;
+    x->height = max_val(get_height(x->left), get_height(x->right)) + 1;
+    return x;
+}
+
+AVLNode* left_rotate(AVLNode *x) {
+    if (!x || !x->right) return x;
+    AVLNode *y = x->right;
+    AVLNode *t2 = y->left;
+    y->left = x;
+    x->right = t2;
+    y->height = max_val(get_height(y->left), get_height(y->right)) + 1;
+    x->height = max_val(get_height(x->left), get_height(x->right)) + 1;
+    return y;
+}
+
+AVLNode* insert_avl(AVLNode *node, int key) {
+    if (!node) return create_node(key);
+    if (key < node->key) node->left = insert_avl(node->left, key);
+    else if (key > node->key) node->right = insert_avl(node->right, key);
+    else return node;
+
+    node->height = 1 + max_val(get_height(node->left), get_height(node->right));
+    int balance = get_balance(node);
+
+    if (balance > 1 && get_balance(node->left) >= 0) return right_rotate(node);
+    if (balance > 1 && get_balance(node->left) < 0) {
+        node->left = left_rotate(node->left);
+        return right_rotate(node);
+    }
+    if (balance < -1 && get_balance(node->right) <= 0) return left_rotate(node);
+    if (balance < -1 && get_balance(node->right) > 0) {
+        node->right = right_rotate(node->right);
+        return left_rotate(node);
+    }
+    return node;
+}
+
+int search_avl(AVLNode *root, int key) {
+    AVLNode *curr = root;
+    while (curr) {
+        if (key == curr->key) return 1;
+        curr = (key < curr->key) ? curr->left : curr->right;
+    }
+    return 0;
+}
+
+void free_avl(AVLNode *root) {
+    if (root) {
+        free_avl(root->left);
+        free_avl(root->right);
+        free(root);
+    }
+}
+
+int main() {
+    AVLNode *root = NULL;
+    int i, found_count = 0;
+    for (i = 0; i < 3000; i++) {
+        int k = (i * 2654435761u) % 15000;
+        root = insert_avl(root, k);
+    }
+    for (i = 0; i < 6000; i++) {
+        found_count += search_avl(root, i * 2);
+    }
+    printf("AVL tree complete: found=%d, root_h=%d\n", found_count, get_height(root));
+    free_avl(root);
+    return 0;
+}
+"""
+
+programs["sparse_matrix_csr.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define ROWS 1500
+#define NNZ_PER_ROW 15
+
+void spmv_csr(int num_rows, const int *row_ptr, const int *col_idx, const double *values, const double *x, double *y) {
+    int i, j;
+    for (i = 0; i < num_rows; i++) {
+        double sum = 0.0;
+        for (j = row_ptr[i]; j < row_ptr[i + 1]; j++) {
+            sum += values[j] * x[col_idx[j]];
+        }
+        y[i] = sum;
+    }
+}
+
+int main() {
+    int total_nnz = ROWS * NNZ_PER_ROW;
+    int *row_ptr = (int *)malloc((ROWS + 1) * sizeof(int));
+    int *col_idx = (int *)malloc(total_nnz * sizeof(int));
+    double *values = (double *)malloc(total_nnz * sizeof(double));
+    double *x = (double *)malloc(ROWS * sizeof(double));
+    double *y = (double *)malloc(ROWS * sizeof(double));
+
+    int i, j, pos = 0;
+    row_ptr[0] = 0;
+    for (i = 0; i < ROWS; i++) {
+        for (j = 0; j < NNZ_PER_ROW; j++) {
+            col_idx[pos] = (i + j * 97) % ROWS;
+            values[pos] = ((i + j) % 10 + 1) * 0.25;
+            pos++;
+        }
+        row_ptr[i + 1] = pos;
+        x[i] = (i % 50) * 0.1;
+    }
+
+    for (int iter = 0; iter < 20; iter++) {
+        spmv_csr(ROWS, row_ptr, col_idx, values, x, y);
+        x[iter % ROWS] += y[iter % ROWS] * 0.001;
+    }
+
+    double checksum = 0.0;
+    for (i = 0; i < ROWS; i += 23) {
+        checksum += y[i];
+    }
+    printf("CSR SpMV complete: checksum=%.4f\n", checksum);
+    free(row_ptr); free(col_idx); free(values); free(x); free(y);
+    return 0;
+}
+"""
+
+programs["astar_pathfind.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define GRID_SZ 64
+#define HEAP_CAP (GRID_SZ * GRID_SZ)
+
+typedef struct {
+    int x, y;
+    int g, f;
+} Node;
+
+typedef struct {
+    Node data[HEAP_CAP];
+    int size;
+} MinHeap;
+
+void push_heap(MinHeap *h, Node n) {
+    int i = h->size++;
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (h->data[p].f <= n.f) break;
+        h->data[i] = h->data[p];
+        i = p;
+    }
+    h->data[i] = n;
+}
+
+Node pop_heap(MinHeap *h) {
+    Node ret = h->data[0];
+    Node last = h->data[--h->size];
+    int i = 0;
+    while (i * 2 + 1 < h->size) {
+        int left = i * 2 + 1, right = left + 1, smallest = left;
+        if (right < h->size && h->data[right].f < h->data[left].f) smallest = right;
+        if (h->data[smallest].f >= last.f) break;
+        h->data[i] = h->data[smallest];
+        i = smallest;
+    }
+    h->data[i] = last;
+    return ret;
+}
+
+int astar(int grid[GRID_SZ][GRID_SZ], int sx, int sy, int gx, int gy) {
+    static int g_score[GRID_SZ][GRID_SZ];
+    static int visited[GRID_SZ][GRID_SZ];
+    int x, y;
+    for (y = 0; y < GRID_SZ; y++) {
+        for (x = 0; x < GRID_SZ; x++) {
+            g_score[y][x] = 999999;
+            visited[y][x] = 0;
+        }
+    }
+    MinHeap heap;
+    heap.size = 0;
+    g_score[sy][sx] = 0;
+    Node start = {sx, sy, 0, abs(gx - sx) + abs(gy - sy)};
+    push_heap(&heap, start);
+
+    int dx[4] = {0, 0, 1, -1};
+    int dy[4] = {1, -1, 0, 0};
+
+    while (heap.size > 0) {
+        Node curr = pop_heap(&heap);
+        if (curr.x == gx && curr.y == gy) return curr.g;
+        if (visited[curr.y][curr.x]) continue;
+        visited[curr.y][curr.x] = 1;
+
+        for (int d = 0; d < 4; d++) {
+            int nx = curr.x + dx[d], ny = curr.y + dy[d];
+            if (nx >= 0 && nx < GRID_SZ && ny >= 0 && ny < GRID_SZ && grid[ny][nx] == 0) {
+                int tentative_g = curr.g + 1;
+                if (tentative_g < g_score[ny][nx]) {
+                    g_score[ny][nx] = tentative_g;
+                    Node next = {nx, ny, tentative_g, tentative_g + abs(gx - nx) + abs(gy - ny)};
+                    push_heap(&heap, next);
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+int main() {
+    static int grid[GRID_SZ][GRID_SZ];
+    int x, y, iter, total_dist = 0;
+    for (y = 0; y < GRID_SZ; y++) {
+        for (x = 0; x < GRID_SZ; x++) {
+            grid[y][x] = ((x * 11 + y * 17) % 7 == 0) ? 1 : 0;
+        }
+    }
+    grid[0][0] = 0;
+    grid[GRID_SZ - 1][GRID_SZ - 1] = 0;
+
+    for (iter = 0; iter < 12; iter++) {
+        int target_x = (GRID_SZ - 1 - (iter % 8));
+        int target_y = (GRID_SZ - 1 - ((iter * 3) % 8));
+        grid[target_y][target_x] = 0;
+        int d = astar(grid, 0, 0, target_x, target_y);
+        total_dist += (d > 0 ? d : 0);
+    }
+    printf("A* Pathfind complete: total_dist=%d\n", total_dist);
+    return 0;
+}
+"""
+
+programs["crc64_calc.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#define POLY64 0x42F0E1EBA9EA3693ULL
+#define BUF_SZ (64 * 1024)
+
+static uint64_t crc_table[256];
+
+void init_crc64_table() {
+    for (int i = 0; i < 256; i++) {
+        uint64_t crc = (uint64_t)i << 56;
+        for (int j = 0; j < 8; j++) {
+            if (crc & 0x8000000000000000ULL) {
+                crc = (crc << 1) ^ POLY64;
+            } else {
+                crc <<= 1;
+            }
+        }
+        crc_table[i] = crc;
+    }
+}
+
+uint64_t compute_crc64(const uint8_t *data, size_t len) {
+    uint64_t crc = 0xFFFFFFFFFFFFFFFFULL;
+    for (size_t i = 0; i < len; i++) {
+        uint8_t table_idx = (uint8_t)((crc >> 56) ^ data[i]);
+        crc = (crc << 8) ^ crc_table[table_idx];
+    }
+    return crc ^ 0xFFFFFFFFFFFFFFFFULL;
+}
+
+int main() {
+    init_crc64_table();
+    uint8_t *buf = (uint8_t *)malloc(BUF_SZ);
+    for (size_t i = 0; i < BUF_SZ; i++) {
+        buf[i] = (uint8_t)((i * 31 + 17) & 0xFF);
+    }
+
+    uint64_t final_crc = 0;
+    for (int iter = 0; iter < 15; iter++) {
+        buf[iter % 1024] ^= (uint8_t)iter;
+        final_crc ^= compute_crc64(buf, BUF_SZ);
+    }
+    printf("CRC64 complete: crc=0x%016llX\n", (unsigned long long)final_crc);
+    free(buf);
+    return 0;
+}
+"""
+
+programs["sudoku_solver.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define N 9
+
+int is_valid(int board[N][N], int row, int col, int num) {
+    for (int i = 0; i < N; i++) {
+        if (board[row][i] == num || board[i][col] == num) return 0;
+    }
+    int start_r = (row / 3) * 3, start_c = (col / 3) * 3;
+    for (int r = 0; r < 3; r++) {
+        for (int c = 0; c < 3; c++) {
+            if (board[start_r + r][start_c + c] == num) return 0;
+        }
+    }
+    return 1;
+}
+
+int solve_sudoku(int board[N][N], int row, int col) {
+    if (row == N - 1 && col == N) return 1;
+    if (col == N) { row++; col = 0; }
+    if (board[row][col] > 0) return solve_sudoku(board, row, col + 1);
+
+    for (int num = 1; num <= 9; num++) {
+        if (is_valid(board, row, col, num)) {
+            board[row][col] = num;
+            if (solve_sudoku(board, row, col + 1)) return 1;
+            board[row][col] = 0;
+        }
+    }
+    return 0;
+}
+
+int main() {
+    int puzzle[N][N] = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+    int work[N][N];
+    int solved_count = 0, checksum = 0;
+    for (int iter = 0; iter < 15; iter++) {
+        for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
+                work[r][c] = puzzle[r][c];
+            }
+        }
+        if (solve_sudoku(work, 0, 0)) {
+            solved_count++;
+            checksum += work[0][0] + work[4][4] + work[8][8];
+        }
+    }
+    printf("Sudoku solver complete: solved=%d, checksum=%d\n", solved_count, checksum);
+    return 0;
+}
+"""
+
+programs["gaussian_blur.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define W 128
+#define H 128
+
+void gaussian_blur_separable(const float *in, float *out, float *temp, int w, int h) {
+    float k[5] = {0.06136f, 0.24477f, 0.38774f, 0.24477f, 0.06136f};
+    int x, y, i;
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            float sum = 0.0f;
+            for (i = -2; i <= 2; i++) {
+                int cx = x + i;
+                if (cx < 0) cx = 0;
+                if (cx >= w) cx = w - 1;
+                sum += in[y * w + cx] * k[i + 2];
+            }
+            temp[y * w + x] = sum;
+        }
+    }
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            float sum = 0.0f;
+            for (i = -2; i <= 2; i++) {
+                int cy = y + i;
+                if (cy < 0) cy = 0;
+                if (cy >= h) cy = h - 1;
+                sum += temp[cy * w + x] * k[i + 2];
+            }
+            out[y * w + x] = sum;
+        }
+    }
+}
+
+int main() {
+    float *in = (float *)malloc(W * H * sizeof(float));
+    float *out = (float *)malloc(W * H * sizeof(float));
+    float *temp = (float *)malloc(W * H * sizeof(float));
+
+    for (int i = 0; i < W * H; i++) {
+        in[i] = (float)((i * 17) % 255);
+    }
+    for (int iter = 0; iter < 4; iter++) {
+        gaussian_blur_separable(in, out, temp, W, H);
+        in[iter % (W * H)] += 0.5f;
+    }
+
+    double checksum = 0.0;
+    for (int i = 0; i < W * H; i += 29) {
+        checksum += out[i];
+    }
+    printf("Gaussian blur complete: checksum=%.4f\n", checksum);
+    free(in); free(out); free(temp);
+    return 0;
+}
+"""
+
+programs["lru_cache_sim.c"] = r"""#include <stdio.h>
+#include <stdlib.h>
+
+#define CAPACITY 512
+#define HASH_SIZE 1024
+
+typedef struct Node {
+    int key;
+    int val;
+    struct Node *prev;
+    struct Node *next;
+} Node;
+
+typedef struct {
+    int capacity;
+    int size;
+    Node *head;
+    Node *tail;
+    Node *hash_table[HASH_SIZE];
+} LRUCache;
+
+LRUCache* create_cache(int cap) {
+    LRUCache *cache = (LRUCache *)calloc(1, sizeof(LRUCache));
+    cache->capacity = cap;
+    cache->head = (Node *)calloc(1, sizeof(Node));
+    cache->tail = (Node *)calloc(1, sizeof(Node));
+    cache->head->next = cache->tail;
+    cache->tail->prev = cache->head;
+    return cache;
+}
+
+void remove_node(Node *node) {
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+}
+
+void add_to_head(LRUCache *cache, Node *node) {
+    node->next = cache->head->next;
+    node->prev = cache->head;
+    cache->head->next->prev = node;
+    cache->head->next = node;
+}
+
+int lru_get(LRUCache *cache, int key) {
+    int slot = key % HASH_SIZE;
+    Node *curr = cache->hash_table[slot];
+    if (!curr || curr->key != key) return -1;
+    remove_node(curr);
+    add_to_head(cache, curr);
+    return curr->val;
+}
+
+void lru_put(LRUCache *cache, int key, int val) {
+    int slot = key % HASH_SIZE;
+    Node *curr = cache->hash_table[slot];
+    if (curr && curr->key == key) {
+        curr->val = val;
+        remove_node(curr);
+        add_to_head(cache, curr);
+        return;
+    }
+    if (cache->size >= cache->capacity) {
+        Node *lru = cache->tail->prev;
+        cache->hash_table[lru->key % HASH_SIZE] = NULL;
+        remove_node(lru);
+        free(lru);
+        cache->size--;
+    }
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    new_node->key = key;
+    new_node->val = val;
+    cache->hash_table[slot] = new_node;
+    add_to_head(cache, new_node);
+    cache->size++;
+}
+
+void free_cache(LRUCache *cache) {
+    Node *curr = cache->head;
+    while (curr) {
+        Node *nxt = curr->next;
+        free(curr);
+        curr = nxt;
+    }
+    free(cache);
+}
+
+int main() {
+    LRUCache *cache = create_cache(CAPACITY);
+    int hits = 0, misses = 0;
+    for (int iter = 0; iter < 12000; iter++) {
+        int key = (iter * 17) % (CAPACITY * 2);
+        if (iter % 3 == 0) {
+            lru_put(cache, key, iter);
+        } else {
+            int v = lru_get(cache, key);
+            if (v >= 0) hits++; else misses++;
+        }
+    }
+    printf("LRU Cache complete: hits=%d, misses=%d\n", hits, misses);
+    free_cache(cache);
+    return 0;
+}
+"""
+
 for fname, code in programs.items():
     path = os.path.join("programs", fname)
     with open(path, "w") as f:

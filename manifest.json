@@ -7117,5 +7117,75 @@
     "original_path": "programs/mibench_qsort_small_merged.c",
     "license": "GPL / BSD / Public Domain",
     "date_added": "2026-10-14"
+  },
+  {
+    "program": "gemm_blocked.c",
+    "source": "original_30",
+    "original_path": "programs/gemm_blocked.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "sobel_filter.c",
+    "source": "original_30",
+    "original_path": "programs/sobel_filter.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "radix_sort.c",
+    "source": "original_30",
+    "original_path": "programs/radix_sort.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "sparse_matrix_csr.c",
+    "source": "original_30",
+    "original_path": "programs/sparse_matrix_csr.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "astar_pathfind.c",
+    "source": "original_30",
+    "original_path": "programs/astar_pathfind.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "crc64_calc.c",
+    "source": "original_30",
+    "original_path": "programs/crc64_calc.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "sudoku_solver.c",
+    "source": "original_30",
+    "original_path": "programs/sudoku_solver.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "gaussian_blur.c",
+    "source": "original_30",
+    "original_path": "programs/gaussian_blur.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "lru_cache_sim.c",
+    "source": "original_30",
+    "original_path": "programs/lru_cache_sim.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
+  },
+  {
+    "program": "avl_tree_ops.c",
+    "source": "original_30",
+    "original_path": "programs/avl_tree_ops.c",
+    "license": "Internal / Benchmark Suite",
+    "date_added": "2026-10-17"
   }
 ]
