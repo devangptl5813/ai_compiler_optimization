@@ -6991,5 +6991,131 @@
     "original_path": ".temp_llvm/SingleSource/Regression/C/gcc-c-torture/execute/20071211-1.c",
     "license": "GPL / FSF GCC Runtime Exception",
     "date_added": "2026-10-13"
+  },
+  {
+    "program": "cbench_telecom_adpcm_c_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_telecom_adpcm_c_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_telecom_adpcm_d_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_telecom_adpcm_d_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_adpcm_rawcaudio_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_adpcm_rawcaudio_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_adpcm_rawdaudio_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_adpcm_rawdaudio_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_stringsearch_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_stringsearch_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_automotive_qsort1_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_automotive_qsort1_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_network_dijkstra_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_network_dijkstra_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_office_stringsearch2_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_office_stringsearch2_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_security_rijndael_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_security_rijndael_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_security_sha_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_security_sha_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "cbench_telecom_crc32_merged.c",
+    "source": "cbench",
+    "original_path": "programs/cbench_telecom_crc32_merged.c",
+    "license": "Open Source / cTuning",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_blowfish_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_blowfish_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_crc32_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_crc32_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_dijkstra_small_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_dijkstra_small_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_fft_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_fft_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_sha_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_sha_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_basicmath_small_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_basicmath_small_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
+  },
+  {
+    "program": "mibench_qsort_small_merged.c",
+    "source": "mibench",
+    "original_path": "programs/mibench_qsort_small_merged.c",
+    "license": "GPL / BSD / Public Domain",
+    "date_added": "2026-10-14"
   }
 ]
